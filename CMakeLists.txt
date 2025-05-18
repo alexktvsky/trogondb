@@ -30,6 +30,7 @@ target_sources(${PROJECT_NAME}
 PRIVATE
     src/trogondb/main.cpp
     src/trogondb/server.cpp
+    src/trogondb/config_node.cpp
     src/trogondb/config_parser.cpp
     src/trogondb/command_line_parser.cpp
     src/trogondb/logging/logger.cpp
