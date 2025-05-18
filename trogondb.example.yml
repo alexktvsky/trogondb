@@ -1,0 +1,19 @@
+host: localhost
+port: 57268
+daemon: false
+workdir: /
+priority: 0
+user: nobody
+group: nobody
+
+log:
+  - target: stdout
+    level: debug
+
+  - target: /tmp/trogondb.log
+    level: debug
+
+  - target: /tmp/rtserver_debug.log
+    level: debug
+    limit: 30M
+    rotate: 3

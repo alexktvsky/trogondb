@@ -1,0 +1,11 @@
+#pragma once
+
+#cmakedefine01 LINUX
+
+#cmakedefine01 X86_32
+#cmakedefine01 X86_64
+#cmakedefine01 ARM64
+
+#define SYSTEM_NAME              "@CMAKE_SYSTEM_NAME@"
+#define ARCH_NAME                "@ARCH_NAME@"
+#define COMPILER_NAME_VERSIONED  "@CXX_COMPILER_NAME@ @CMAKE_CXX_COMPILER_VERSION@"
