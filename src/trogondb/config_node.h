@@ -51,11 +51,9 @@ public:
 
     int getRealColumnInFile() const;
 
-    std::list<Node> getUsedNodes() const;
-
     std::list<Node> getNodes() const;
 
-    void checkForUnusedNodes() const;
+    static void checkForUnusedNodes(const Node &root);
 
 private:
     Node(const YAML::Node &node,
@@ -65,7 +63,11 @@ private:
          const std::shared_ptr<std::stringstream> &fileBuffer,
          const std::shared_ptr<std::list<Node>> &usedNodes);
 
-    void traverseNode(const Node &node, std::list<Node> *nodes) const;
+    std::list<Node> getUsedNodes() const;
+
+    static void traverseNode(const Node &root, std::list<Node> *outputNodes);
+
+    static std::string getLastElementInNodePath(const std::string &path);
 
 private:
     YAML::Node m_node;

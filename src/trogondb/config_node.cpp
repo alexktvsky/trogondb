@@ -102,45 +102,7 @@ unsigned int Node::getColumnInFile() const
     return m_node.Mark().column + 1;
 }
 
-std::list<Node> Node::getUsedNodes() const
-{
-    return std::list<Node>(*m_usedNodes);
-}
-
-std::list<Node> Node::getNodes() const
-{
-    std::list<Node> nodes;
-
-    // Find all nodes starting from the current node
-    traverseNode(*this, &nodes);
-
-    return nodes;
-}
-
-void Node::traverseNode(const Node &node, std::list<Node> *nodes) const
-{
-    if (node.m_node.IsMap()) {
-        for (YAML::const_iterator it = node.m_node.begin(); it != node.m_node.end(); ++it) {
-            std::string key = it->first.as<std::string>();
-            std::string childPath = node.m_path.empty() ? key : fmt::format("{}.{}", node.m_path, key);
-            Node nextNode(it->second, node.m_node, childPath, node.m_fileName, node.m_fileBuffer, node.m_usedNodes);
-            traverseNode(nextNode, nodes);
-        }
-    }
-    else if (node.m_node.IsSequence()) {
-        for (size_t i = 0; i < node.m_node.size(); ++i) {
-            std::string childPath = fmt::format("{}[{}]", node.m_path, i);
-            Node nextNode(node.m_node[i], node.m_node, childPath, node.m_fileName, node.m_fileBuffer, node.m_usedNodes);
-            traverseNode(nextNode, nodes);
-        }
-    }
-
-    if (!node.m_path.empty()) {
-        nodes->push_back(node);
-    }
-}
-
-std::string getLastElementInNodePath(const std::string &path)
+std::string Node::getLastElementInNodePath(const std::string &path)
 {
     size_t lastDotPos = path.find_last_of('.');
 
@@ -181,10 +143,48 @@ int Node::getRealColumnInFile() const
     return -1; // Line number out of range
 }
 
-void Node::checkForUnusedNodes() const
+std::list<Node> Node::getUsedNodes() const
 {
-    std::list<Node> usedNodes = getUsedNodes();
-    std::list<Node> nodes = getNodes();
+    return std::list<Node>(*m_usedNodes);
+}
+
+std::list<Node> Node::getNodes() const
+{
+    std::list<Node> nodes;
+
+    // Find all nodes starting from the current node
+    traverseNode(*this, &nodes);
+
+    return nodes;
+}
+
+void Node::traverseNode(const Node &root, std::list<Node> *outputNodes)
+{
+    if (root.m_node.IsMap()) {
+        for (YAML::const_iterator it = root.m_node.begin(); it != root.m_node.end(); ++it) {
+            std::string key = it->first.as<std::string>();
+            std::string childPath = root.m_path.empty() ? key : fmt::format("{}.{}", root.m_path, key);
+            Node nextNode(it->second, root.m_node, childPath, root.m_fileName, root.m_fileBuffer, root.m_usedNodes);
+            traverseNode(nextNode, outputNodes);
+        }
+    }
+    else if (root.m_node.IsSequence()) {
+        for (size_t i = 0; i < root.m_node.size(); ++i) {
+            std::string childPath = fmt::format("{}[{}]", root.m_path, i);
+            Node nextNode(root.m_node[i], root.m_node, childPath, root.m_fileName, root.m_fileBuffer, root.m_usedNodes);
+            traverseNode(nextNode, outputNodes);
+        }
+    }
+
+    if (!root.m_path.empty()) {
+        outputNodes->push_back(root);
+    }
+}
+
+void Node::checkForUnusedNodes(const Node &root)
+{
+    std::list<Node> usedNodes = root.getUsedNodes();
+    std::list<Node> nodes = root.getNodes();
     std::string message;
     bool checkFailed = false;
 

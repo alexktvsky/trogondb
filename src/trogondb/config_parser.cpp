@@ -138,7 +138,7 @@ std::shared_ptr<ServerConfig> ConfigParser::parseFile(const std::string &fileNam
         config->logs.push_back({target, level, limit, rotate});
     }
 
-    rootNode.checkForUnusedNodes();
+    Node::checkForUnusedNodes(rootNode);
 
     return config;
 }
