@@ -8,7 +8,7 @@
 
 namespace trogondb {
 
-class ServerConfigParser {
+class ConfigParser {
 public:
     static std::shared_ptr<ServerConfig> parseFile(const std::string &filename);
 };

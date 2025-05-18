@@ -3,7 +3,7 @@
 #include <vector>
 
 #include "trogondb/command_line_parser.h"
-#include "trogondb/server_config_parser.h"
+#include "trogondb/config_parser.h"
 #include "trogondb/server.h"
 #include "trogondb/platform_defines.h"
 #include "trogondb/release.h"
@@ -67,7 +67,7 @@ int main(int argc, char **argv)
             configFilename = commandLineParser.getOptionValue("config");
         }
 
-        auto config = trogondb::ServerConfigParser::parseFile(configFilename);
+        auto config = trogondb::ConfigParser::parseFile(configFilename);
 
         trogondb::Server server(std::move(config));
 

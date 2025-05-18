@@ -1,4 +1,4 @@
-#include "server_config_parser.h"
+#include "config_parser.h"
 
 #include <algorithm>
 #include <memory>
@@ -151,7 +151,7 @@ private:
     YAML::Node m_node;
     std::optional<YAML::Node> m_parent;
     std::string m_path;
-    std::string m_filename;
+    std::string m_fileName;
     std::shared_ptr<std::stringstream> m_fileBuffer;
     mutable std::shared_ptr<std::list<Node>> m_usedNodes;
 };
@@ -165,7 +165,7 @@ Node::Node(const YAML::Node &node,
     : m_node(node)
     , m_parent(parent)
     , m_path(path)
-    , m_filename(filename)
+    , m_fileName(filename)
     , m_fileBuffer(fileBuffer)
     , m_usedNodes(usedNodes)
 {
@@ -206,10 +206,10 @@ Node Node::getChild(const std::string &key) const
 
     if (!childNode) {
         throw trogondb::ConfigFileException(
-            fmt::format("YAML parse error on {}: Missing keyword '{}'", m_filename, childPath));
+            fmt::format("YAML parse error on {}: Missing keyword '{}'", m_fileName, childPath));
     }
 
-    Node createdNode = Node(childNode, m_node, childPath, m_filename, m_fileBuffer, m_usedNodes);
+    Node createdNode = Node(childNode, m_node, childPath, m_fileName, m_fileBuffer, m_usedNodes);
 
     m_usedNodes->push_back(createdNode);
 
@@ -225,11 +225,11 @@ T Node::getValue(const std::string &key) const
 
     if (!childNode) {
         throw trogondb::ConfigFileException(
-            fmt::format("YAML parse error on {}: Missing keyword '{}'", m_filename, childPath));
+            fmt::format("YAML parse error on {}: Missing keyword '{}'", m_fileName, childPath));
     }
 
     try {
-        m_usedNodes->push_back(Node(childNode, m_node, childPath, m_filename, m_fileBuffer, m_usedNodes));
+        m_usedNodes->push_back(Node(childNode, m_node, childPath, m_fileName, m_fileBuffer, m_usedNodes));
         return childNode.as<T>();
     }
     catch (const YAML::TypedBadConversion<T> &e) {
@@ -238,7 +238,7 @@ T Node::getValue(const std::string &key) const
         std::string valueAsString = childNode.as<std::string>();
         throw trogondb::ConfigFileException(
             fmt::format("YAML parse error on  {}:{}:{}: Invalid value '{}' for keyword '{}'",
-                        m_filename,
+                        m_fileName,
                         lineNumber,
                         columnNumber,
                         valueAsString,
@@ -258,7 +258,7 @@ T Node::getValue(const std::string &key, const T &defaultValue) const
     }
 
     try {
-        m_usedNodes->push_back(Node(childNode, m_node, childPath, m_filename, m_fileBuffer, m_usedNodes));
+        m_usedNodes->push_back(Node(childNode, m_node, childPath, m_fileName, m_fileBuffer, m_usedNodes));
         return childNode.as<T>();
     }
     catch (const YAML::TypedBadConversion<T> &e) {
@@ -267,7 +267,7 @@ T Node::getValue(const std::string &key, const T &defaultValue) const
         std::string valueAsString = childNode.as<std::string>();
         throw trogondb::ConfigFileException(
             fmt::format("YAML parse error on {}:{}:{}: Invalid value '{}' for keyword '{}'",
-                        m_filename,
+                        m_fileName,
                         line,
                         column,
                         valueAsString,
@@ -287,7 +287,7 @@ T Node::getValue(const std::string &key, const std::vector<T> &possibleValues) c
         std::string path = this->getFullPath();
         throw trogondb::ConfigFileException(
             fmt::format("YAML parse error on {}:{}:{}: Invalid value '{}' for keyword '{}'",
-                        m_filename,
+                        m_fileName,
                         lineNumber,
                         columnNumber,
                         valueAsString,
@@ -308,7 +308,7 @@ T Node::getValue(const std::string &key, const T &defaultValue, const std::vecto
         std::string path = this->getFullPath();
         throw trogondb::ConfigFileException(
             fmt::format("YAML parse error on {}:{}:{}: Invalid value '{}' for keyword '{}'",
-                        m_filename,
+                        m_fileName,
                         lineNumber,
                         columnNumber,
                         valueAsString,
@@ -321,7 +321,7 @@ Node Node::operator[](size_t index) const
 {
     std::string childPath = fmt::format("{}[{}]", m_path, index);
 
-    Node createdNode = Node(m_node[index], m_node, childPath, m_filename, m_fileBuffer, m_usedNodes);
+    Node createdNode = Node(m_node[index], m_node, childPath, m_fileName, m_fileBuffer, m_usedNodes);
 
     m_usedNodes->push_back(createdNode);
 
@@ -345,7 +345,7 @@ std::string Node::getFullPath() const
 
 std::string Node::getFilename() const
 {
-    return m_filename;
+    return m_fileName;
 }
 
 unsigned int Node::getLineInFile() const
@@ -379,13 +379,13 @@ void Node::traverseNode(const Node &node, std::list<Node> *nodes) const
         for (YAML::const_iterator it = node.m_node.begin(); it != node.m_node.end(); ++it) {
             std::string key = it->first.as<std::string>();
             std::string childPath = node.m_path.empty() ? key : fmt::format("{}.{}", node.m_path, key);
-            traverseNode(Node(it->second, node.m_node, childPath, node.m_filename, node.m_fileBuffer, node.m_usedNodes), nodes);
+            traverseNode(Node(it->second, node.m_node, childPath, node.m_fileName, node.m_fileBuffer, node.m_usedNodes), nodes);
         }
     }
     else if (node.m_node.IsSequence()) {
         for (size_t i = 0; i < node.m_node.size(); ++i) {
             std::string childPath = fmt::format("{}[{}]", node.m_path, i);
-            traverseNode(Node(node.m_node[i], node.m_node, childPath, node.m_filename, node.m_fileBuffer, node.m_usedNodes), nodes);
+            traverseNode(Node(node.m_node[i], node.m_node, childPath, node.m_fileName, node.m_fileBuffer, node.m_usedNodes), nodes);
         }
     }
 
@@ -471,7 +471,7 @@ void checkForUnusedNodes(const Node &rootNode)
 
 namespace trogondb {
 
-std::shared_ptr<ServerConfig> ServerConfigParser::parseFile(const std::string &filename)
+std::shared_ptr<ServerConfig> ConfigParser::parseFile(const std::string &filename)
 {
     auto config = std::make_shared<ServerConfig>();
 
