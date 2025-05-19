@@ -1,4 +1,4 @@
-#include "handler.h"
+#include "trogondb/logging/handler.h"
 
 #include <spdlog/spdlog.h>
 #include <spdlog/async.h>

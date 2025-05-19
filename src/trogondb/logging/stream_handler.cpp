@@ -1,4 +1,4 @@
-#include "stream_handler.h"
+#include "trogondb/logging/stream_handler.h"
 
 #include <spdlog/sinks/stdout_color_sinks.h>
 

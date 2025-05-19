@@ -1,4 +1,4 @@
-#include "rotating_file_handler.h"
+#include "trogondb/logging/rotating_file_handler.h"
 
 #include <spdlog/sinks/rotating_file_sink.h>
 

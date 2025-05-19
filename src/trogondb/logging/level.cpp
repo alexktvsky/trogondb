@@ -1,4 +1,4 @@
-#include "level.h"
+#include "trogondb/logging/level.h"
 
 #include <fmt/format.h>
 #include <spdlog/spdlog.h>

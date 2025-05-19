@@ -1,4 +1,4 @@
-#include "config_node.h"
+#include "trogondb/config_node.h"
 
 #include <fstream>
 
