@@ -7,7 +7,7 @@
 
 namespace trogondb {
 
-struct ServerConfig {
+struct Config {
     std::string host;
     uint16_t port;
     bool daemon;

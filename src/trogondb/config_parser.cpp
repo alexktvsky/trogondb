@@ -115,9 +115,9 @@ struct convert<SizeWithUnit> {
 
 namespace trogondb {
 
-std::shared_ptr<ServerConfig> ConfigParser::parseFile(const std::string &fileName)
+std::shared_ptr<Config> ConfigParser::parseFile(const std::string &fileName)
 {
-    auto config = std::make_shared<ServerConfig>();
+    auto config = std::make_shared<Config>();
 
     Node rootNode = Node::createRootNode(fileName);
 
