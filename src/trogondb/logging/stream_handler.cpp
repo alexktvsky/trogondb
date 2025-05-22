@@ -16,12 +16,12 @@ std::shared_ptr<HandlerImpl> StreamHandler::createStreamHandler(std::FILE *strea
     if (stream == stdout) {
         return std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
     }
-    else if (stream == stderr) {
+
+    if (stream == stderr) {
         return std::make_shared<spdlog::sinks::stderr_color_sink_mt>();
     }
-    else {
-        throw InvalidStreamException("Invalid stream");
-    }
+
+    throw InvalidStreamException("Invalid stream");
 }
 
 } // namespace logging

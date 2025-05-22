@@ -69,7 +69,6 @@ private:
 
     int getRealColumnInFile() const;
 
-private:
     YAML::Node m_node;
     std::optional<YAML::Node> m_parent;
     std::string m_path;

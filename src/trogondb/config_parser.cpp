@@ -19,7 +19,6 @@ private:
     static size_t parseString(const std::string &str);
     static bool isNumericString(const std::string &str);
 
-private:
     size_t m_value;
 };
 
@@ -34,13 +33,7 @@ SizeWithUnit::SizeWithUnit(const std::string &str)
 
 bool SizeWithUnit::isNumericString(const std::string &str)
 {
-    for (const auto &c : str) {
-        if (!std::isdigit(c)) {
-            return false;
-        }
-    }
-
-    return true;
+    return std::all_of(str.begin(), str.end(), [](unsigned char c) { return std::isdigit(c); });
 }
 
 size_t SizeWithUnit::parseString(const std::string &str)

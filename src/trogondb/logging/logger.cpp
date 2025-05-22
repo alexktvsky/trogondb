@@ -18,7 +18,7 @@ Logger::Logger(const std::list<std::shared_ptr<Handler>> &handlers)
 Logger::Logger(const std::list<std::shared_ptr<Handler>> &handlers, const std::string &name)
 {
     // Queue with 8k items and 1 backing thread
-    spdlog::init_thread_pool(8192, 1);
+    spdlog::init_thread_pool(LOG_QUEUE_SIZE, LOG_THREAD_COUNT);
 
     auto threadPool = spdlog::thread_pool();
     auto overflowPolicy = spdlog::async_overflow_policy::block;

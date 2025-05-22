@@ -19,7 +19,7 @@ private:
     static std::shared_ptr<logging::Logger> createLogger(const std::shared_ptr<Config> &config);
     void initializeProcess(const std::shared_ptr<Config> &config);
     void initialize();
-private:
+
     std::shared_ptr<Config> m_config;
     std::shared_ptr<logging::Logger> m_logger;
 };

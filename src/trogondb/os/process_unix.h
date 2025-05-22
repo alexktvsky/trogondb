@@ -40,7 +40,7 @@ void ProcessUnix::becomeDaemon()
     }
 
     // Parent terminates
-    if (pid) {
+    if (pid != 0) {
         exit(0);
     }
 
@@ -62,7 +62,7 @@ void ProcessUnix::becomeDaemon()
     }
 
     // 1th child terminates
-    if (pid) {
+    if (pid != 0) {
         exit(0);
     }
 

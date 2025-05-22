@@ -15,6 +15,9 @@ class async_logger;
 namespace trogondb {
 namespace logging {
 
+constexpr std::size_t LOG_QUEUE_SIZE = 8192;
+constexpr std::size_t LOG_THREAD_COUNT = 1;
+
 class Logger {
 public:
     Logger(const std::list<std::shared_ptr<Handler>> &handlers);
