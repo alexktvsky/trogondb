@@ -45,11 +45,9 @@ public:
 
     std::string getFilename() const;
 
-    unsigned int getLineInFile() const;
+    int getLineInFile() const;
 
-    unsigned int getColumnInFile() const;
-
-    int getRealColumnInFile() const;
+    int getColumnInFile() const;
 
     std::list<Node> getNodes() const;
 
@@ -69,6 +67,8 @@ private:
 
     static std::string getLastElementInNodePath(const std::string &path);
 
+    int getRealColumnInFile() const;
+
 private:
     YAML::Node m_node;
     std::optional<YAML::Node> m_parent;
@@ -86,7 +86,7 @@ T Node::getValue(const std::string &key) const
     YAML::Node childNode = m_node[key];
 
     if (!childNode) {
-        throw ConfigFileException(fmt::format("YAML parse error on {}: Missing keyword '{}'", m_fileName, childPath));
+        throw ConfigFileException(fmt::format("Config parse error on {}: Missing keyword '{}'", m_fileName, childPath));
     }
 
     try {
@@ -97,7 +97,7 @@ T Node::getValue(const std::string &key) const
         int lineNumber = e.mark.line + 1;
         int columnNumber = e.mark.column + 1;
         std::string valueAsString = childNode.as<std::string>();
-        throw ConfigFileException(fmt::format("YAML parse error on  {}:{}:{}: Invalid value '{}' for keyword '{}'", m_fileName, lineNumber, columnNumber, valueAsString, childPath));
+        throw ConfigFileException(fmt::format("Config parse error on  {}:{}:{}: Invalid value '{}' for keyword '{}'", m_fileName, lineNumber, columnNumber, valueAsString, childPath));
     }
 }
 
@@ -120,7 +120,7 @@ T Node::getValue(const std::string &key, const T &defaultValue) const
         int line = e.mark.line + 1;
         int column = e.mark.column + 1;
         std::string valueAsString = childNode.as<std::string>();
-        throw ConfigFileException(fmt::format("YAML parse error on {}:{}:{}: Invalid value '{}' for keyword '{}'", m_fileName, line, column, valueAsString, childPath));
+        throw ConfigFileException(fmt::format("Config parse error on {}:{}:{}: Invalid value '{}' for keyword '{}'", m_fileName, line, column, valueAsString, childPath));
     }
 }
 
@@ -134,7 +134,7 @@ T Node::getValue(const std::string &key, const std::vector<T> &possibleValues) c
         int columnNumber = this->getColumnInFile();
         std::string valueAsString = m_node[key].as<std::string>();
         std::string path = this->getFullPath();
-        throw ConfigFileException(fmt::format("YAML parse error on {}:{}:{}: Invalid value '{}' for keyword '{}'", m_fileName, lineNumber, columnNumber, valueAsString, path));
+        throw ConfigFileException(fmt::format("Config parse error on {}:{}:{}: Invalid value '{}' for keyword '{}'", m_fileName, lineNumber, columnNumber, valueAsString, path));
     }
     return value;
 }
@@ -149,7 +149,7 @@ T Node::getValue(const std::string &key, const T &defaultValue, const std::vecto
         int columnNumber = this->getColumnInFile();
         std::string valueAsString = m_node[key].as<std::string>();
         std::string path = this->getFullPath();
-        throw ConfigFileException(fmt::format("YAML parse error on {}:{}:{}: Invalid value '{}' for keyword '{}'", m_fileName, lineNumber, columnNumber, valueAsString, path));
+        throw ConfigFileException(fmt::format("Config parse error on {}:{}:{}: Invalid value '{}' for keyword '{}'", m_fileName, lineNumber, columnNumber, valueAsString, path));
     }
     return value;
 }

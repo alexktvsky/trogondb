@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdint>
 #include <string>
 #include <map>
 
@@ -16,7 +17,7 @@ enum level_enum : int;
 namespace trogondb {
 namespace logging {
 
-enum class Level {
+enum class Level : uint8_t {
     TRACE,
     DEBUG,
     INFO,

@@ -48,13 +48,13 @@ int ProcessWin32::getPriority()
 
     // Map to Unix-like values for consistency
     switch (priority) {
-        case IDLE_PRIORITY_CLASS: return 19;
-        case BELOW_NORMAL_PRIORITY_CLASS: return 10;
-        case NORMAL_PRIORITY_CLASS: return 0;
-        case ABOVE_NORMAL_PRIORITY_CLASS: return -5;
-        case HIGH_PRIORITY_CLASS: return -10;
-        case REALTIME_PRIORITY_CLASS: return -20;
-        default: return 0;
+    case IDLE_PRIORITY_CLASS: return 19;
+    case BELOW_NORMAL_PRIORITY_CLASS: return 10;
+    case NORMAL_PRIORITY_CLASS: return 0;
+    case ABOVE_NORMAL_PRIORITY_CLASS: return -5;
+    case HIGH_PRIORITY_CLASS: return -10;
+    case REALTIME_PRIORITY_CLASS: return -20;
+    default: return 0;
     }
 }
 

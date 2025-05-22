@@ -44,14 +44,14 @@ Node Node::createRootNode(const std::string &filename)
     return Node(node, std::nullopt, "", filename, fileBuffer, usedNodes);
 }
 
-Node Node::getChild(const std::string &key) const
+Node Node::getChild(const std::string &nodeName) const
 {
-    std::string childPath = m_path.empty() ? key : fmt::format("{}.{}", m_path, key);
+    std::string childPath = m_path.empty() ? nodeName : fmt::format("{}.{}", m_path, nodeName);
 
-    YAML::Node childNode = m_node[key];
+    YAML::Node childNode = m_node[nodeName];
 
     if (!childNode) {
-        throw ConfigFileException(fmt::format("YAML parse error on {}: Missing keyword '{}'", m_fileName, childPath));
+        throw ConfigFileException(fmt::format("Config parse error on {}: Missing keyword '{}'", m_fileName, childPath));
     }
 
     Node createdNode = Node(childNode, m_node, childPath, m_fileName, m_fileBuffer, m_usedNodes);
@@ -92,14 +92,15 @@ std::string Node::getFilename() const
     return m_fileName;
 }
 
-unsigned int Node::getLineInFile() const
+int Node::getLineInFile() const
 {
     return m_node.Mark().line + 1;
 }
 
-unsigned int Node::getColumnInFile() const
+int Node::getColumnInFile() const
 {
-    return m_node.Mark().column + 1;
+    int columnNumber = getRealColumnInFile();
+    return columnNumber != -1 ? columnNumber : m_node.Mark().column + 1;
 }
 
 std::string Node::getLastElementInNodePath(const std::string &path)
@@ -196,11 +197,8 @@ void Node::checkForUnusedNodes(const Node &root)
                 message += "\n";
             }
 
-            int columnNumber = node.getRealColumnInFile();
-            if (columnNumber == -1) {
-                columnNumber = node.getColumnInFile();
-            }
-            message += fmt::format("YAML parse error on {}:{}:{}: Unknown keyword '{}'", node.getFilename(), node.getLineInFile(), columnNumber, node.getFullPath());
+            int columnNumber = node.getColumnInFile();
+            message += fmt::format("Config parse error on {}:{}:{}: Unknown keyword '{}'", node.getFilename(), node.getLineInFile(), columnNumber, node.getFullPath());
         }
     }
 

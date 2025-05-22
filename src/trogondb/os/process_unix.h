@@ -106,7 +106,7 @@ void ProcessUnix::setUser(const std::string &user)
         throw SystemException(fmt::format("Failed to change user, getpwnam({}) failed", user));
     }
 
-    int uid = pwd->pw_uid;
+    unsigned int uid = pwd->pw_uid;
     if (setuid(uid) == -1) {
         throw SystemException(fmt::format("Failed to change user, setuid({}) failed", uid));
     }
@@ -124,7 +124,7 @@ void ProcessUnix::setGroup(const std::string &group)
         throw SystemException(fmt::format("Failed to change group, getgrnam({}) failed", group));
     }
 
-    int gid = grp->gr_gid;
+    unsigned int gid = grp->gr_gid;
     if (setgid(gid) == -1) {
         throw SystemException(fmt::format("Failed to change group, setgid({}) failed", gid));
     }
