@@ -33,13 +33,13 @@ PRIVATE
     src/trogondb/config_node.cpp
     src/trogondb/config_parser.cpp
     src/trogondb/command_line_parser.cpp
+    src/trogondb/os/process.cpp
     src/trogondb/logging/logger.cpp
     src/trogondb/logging/level.cpp
     src/trogondb/logging/handler.cpp
     src/trogondb/logging/stream_handler.cpp
     src/trogondb/logging/file_handler.cpp
     src/trogondb/logging/rotating_file_handler.cpp
-    src/trogondb/os/process_${OS_FAMILY}.cpp
 )
 
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_17)

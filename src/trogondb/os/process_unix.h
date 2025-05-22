@@ -1,5 +1,3 @@
-#include "trogondb/os/process.h"
-
 extern "C" {
 #include <unistd.h>
 #include <signal.h>
@@ -14,27 +12,25 @@ extern "C" {
 
 #include "trogondb/os/system_exception.h"
 
-namespace {
-
-constexpr size_t MAX_PATH_LEN = 4096;
-
-std::string getWorkingDirectory()
-{
-    char cwd[MAX_PATH_LEN];
-
-    if (!getcwd(cwd, sizeof(cwd))) {
-        throw trogondb::os::SystemException("Failed to get working directory");
-    }
-
-    return std::string(cwd);
-}
-
-} // namespace
-
 namespace trogondb {
 namespace os {
 
-void Process::becomeDaemon()
+constexpr size_t MAX_PATH_LEN = 4096;
+
+class ProcessUnix {
+public:
+    ProcessUnix() = delete;
+    static void becomeDaemon();
+    static int getPid();
+    static int getPriority();
+    static void setPriority(int priority);
+    static void setUser(const std::string &user);
+    static void setGroup(const std::string &group);
+    static std::string getWorkingDirectory();
+    static void setWorkingDirectory(const std::string &workdir);
+};
+
+void ProcessUnix::becomeDaemon()
 {
     // Fork off the parent process
     pid_t pid = fork();
@@ -81,36 +77,24 @@ void Process::becomeDaemon()
     open("/dev/null", O_RDWR);
 }
 
-int Process::getPid()
+int ProcessUnix::getPid()
 {
     return getpid();
 }
 
-int Process::getPriority()
+int ProcessUnix::getPriority()
 {
     return getpriority(PRIO_PROCESS, getPid());
 }
 
-void Process::setPriority(int priority)
+void ProcessUnix::setPriority(int priority)
 {
     if (setpriority(PRIO_PROCESS, getPid(), priority) == -1) {
         throw SystemException(fmt::format("Failed to set a priority of process, setpriority() failed"));
     }
 }
 
-std::string Process::getWorkingDirectory()
-{
-    return ::getWorkingDirectory();
-}
-
-void Process::setWorkingDirectory(const std::string &workdir)
-{
-    if ((chdir(workdir.c_str())) < 0) {
-        throw SystemException(fmt::format("Failed to change working directory, chdir({}) failed", workdir));
-    }
-}
-
-void Process::setUser(const std::string &user)
+void ProcessUnix::setUser(const std::string &user)
 {
     // Not root, OK
     if (geteuid() != 0) {
@@ -128,7 +112,7 @@ void Process::setUser(const std::string &user)
     }
 }
 
-void Process::setGroup(const std::string &group)
+void ProcessUnix::setGroup(const std::string &group)
 {
     // Not root, OK
     if (getegid() != 0) {
@@ -143,6 +127,24 @@ void Process::setGroup(const std::string &group)
     int gid = grp->gr_gid;
     if (setgid(gid) == -1) {
         throw SystemException(fmt::format("Failed to change group, setgid({}) failed", gid));
+    }
+}
+
+std::string ProcessUnix::getWorkingDirectory()
+{
+    char cwd[MAX_PATH_LEN];
+
+    if (!getcwd(cwd, sizeof(cwd))) {
+        throw SystemException("Failed to get working directory");
+    }
+
+    return std::string(cwd);
+}
+
+void ProcessUnix::setWorkingDirectory(const std::string &workdir)
+{
+    if ((chdir(workdir.c_str())) < 0) {
+        throw SystemException(fmt::format("Failed to change working directory, chdir({}) failed", workdir));
     }
 }
 

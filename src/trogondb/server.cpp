@@ -14,12 +14,12 @@ Server::Server(const std::shared_ptr<Config> &config)
 
 Server::Server(std::shared_ptr<Config> &&config)
     : m_config(std::move(config))
-    , m_logger(configureLogger(m_config))
+    , m_logger(createLogger(m_config))
 {
     // ...
 }
 
-std::shared_ptr<logging::Logger> Server::configureLogger(const std::shared_ptr<Config> &config)
+std::shared_ptr<logging::Logger> Server::createLogger(const std::shared_ptr<Config> &config)
 {
     std::list<std::shared_ptr<logging::Handler>> handlers;
     std::shared_ptr<logging::Handler> handler;

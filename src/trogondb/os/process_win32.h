@@ -1,5 +1,3 @@
-#include "trogondb/os/process.h"
-
 #include <windows.h>
 #include <direct.h>
 #include <io.h>
@@ -10,7 +8,20 @@
 namespace trogondb {
 namespace os {
 
-void Process::becomeDaemon()
+class ProcessWin32 {
+public:
+    ProcessWin32() = delete;
+    static void becomeDaemon();
+    static int getPid();
+    static int getPriority();
+    static void setPriority(int priority);
+    static void setUser(const std::string &user);
+    static void setGroup(const std::string &group);
+    static std::string getWorkingDirectory();
+    static void setWorkingDirectory(const std::string &workdir);
+};
+
+void ProcessWin32::becomeDaemon()
 {
     ShowWindow(GetConsoleWindow(), SW_HIDE);
 
@@ -23,12 +34,12 @@ void Process::becomeDaemon()
     _close(STDERR_FILENO);
 }
 
-int Process::getPid()
+int ProcessWin32::getPid()
 {
     return static_cast<int>(GetCurrentProcessId());
 }
 
-int Process::getPriority()
+int ProcessWin32::getPriority()
 {
     DWORD priority = GetPriorityClass(GetCurrentProcess());
     if (!priority) {
@@ -47,7 +58,7 @@ int Process::getPriority()
     }
 }
 
-void Process::setPriority(int priority)
+void ProcessWin32::setPriority(int priority)
 {
     DWORD winPriority;
 
@@ -75,7 +86,7 @@ void Process::setPriority(int priority)
     }
 }
 
-std::string Process::getWorkingDirectory()
+std::string ProcessWin32::getWorkingDirectory()
 {
     char buffer[MAX_PATH];
     if (!_getcwd(buffer, MAX_PATH)) {
@@ -84,19 +95,19 @@ std::string Process::getWorkingDirectory()
     return std::string(buffer);
 }
 
-void Process::setWorkingDirectory(const std::string &workdir)
+void ProcessWin32::setWorkingDirectory(const std::string &workdir)
 {
     if (!SetCurrentDirectory(workdir)) {
         throw SystemException("Failed to set working directory");
     }
 }
 
-void Process::setUser(const std::string &user)
+void ProcessWin32::setUser(const std::string &user)
 {
     // ...
 }
 
-void Process::setGroup(const std::string &group)
+void ProcessWin32::setGroup(const std::string &group)
 {
     // ...
 }

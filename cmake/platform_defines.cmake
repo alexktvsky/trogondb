@@ -78,12 +78,6 @@ if(NOT (LINUX AND X86_64 OR
     message(FATAL_ERROR "Platform not supported")
 endif()
 
-if(LINUX OR MACOS)
-    set(OS_FAMILY "unix")
-elseif(WIN32)
-    set(OS_FAMILY "win32")
-endif()
-
 string(TOLOWER "${CMAKE_CXX_COMPILER_ID}" CXX_COMPILER_NAME)
 
 configure_file("cmake/helpers/platform_defines.h.in" "${CMAKE_BINARY_DIR}/include/trogondb/platform_defines.h")
