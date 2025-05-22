@@ -1,6 +1,8 @@
 #pragma once
 
 #cmakedefine01 LINUX
+#cmakedefine01 MACOS
+#cmakedefine01 WIN32
 
 #cmakedefine01 X86_32
 #cmakedefine01 X86_64

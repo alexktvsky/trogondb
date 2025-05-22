@@ -1,6 +1,8 @@
 #include "trogondb/os/process.h"
 
-#ifdef WIN32
+#include "trogondb/platform_defines.h"
+
+#if WIN32
     #include "trogondb/os/process_win32.h"
 using ProcessImpl = trogondb::os::ProcessWin;
 #else

@@ -21,7 +21,7 @@ public:
     static void setWorkingDirectory(const std::string &workdir);
 };
 
-void ProcessWin32::becomeDaemon()
+inline void ProcessWin32::becomeDaemon()
 {
     ShowWindow(GetConsoleWindow(), SW_HIDE);
 
@@ -34,12 +34,12 @@ void ProcessWin32::becomeDaemon()
     _close(STDERR_FILENO);
 }
 
-int ProcessWin32::getPid()
+inline int ProcessWin32::getPid()
 {
     return static_cast<int>(GetCurrentProcessId());
 }
 
-int ProcessWin32::getPriority()
+inline int ProcessWin32::getPriority()
 {
     DWORD priority = GetPriorityClass(GetCurrentProcess());
     if (!priority) {
@@ -58,7 +58,7 @@ int ProcessWin32::getPriority()
     }
 }
 
-void ProcessWin32::setPriority(int priority)
+inline void ProcessWin32::setPriority(int priority)
 {
     DWORD winPriority;
 
@@ -86,7 +86,7 @@ void ProcessWin32::setPriority(int priority)
     }
 }
 
-std::string ProcessWin32::getWorkingDirectory()
+inline std::string ProcessWin32::getWorkingDirectory()
 {
     char buffer[MAX_PATH];
     if (!_getcwd(buffer, MAX_PATH)) {
@@ -95,19 +95,19 @@ std::string ProcessWin32::getWorkingDirectory()
     return std::string(buffer);
 }
 
-void ProcessWin32::setWorkingDirectory(const std::string &workdir)
+inline void ProcessWin32::setWorkingDirectory(const std::string &workdir)
 {
     if (!SetCurrentDirectory(workdir)) {
         throw SystemException("Failed to set working directory");
     }
 }
 
-void ProcessWin32::setUser(const std::string &user)
+inline void ProcessWin32::setUser(const std::string &user)
 {
     // ...
 }
 
-void ProcessWin32::setGroup(const std::string &group)
+inline void ProcessWin32::setGroup(const std::string &group)
 {
     // ...
 }

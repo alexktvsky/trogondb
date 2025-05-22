@@ -30,7 +30,7 @@ public:
     static void setWorkingDirectory(const std::string &workdir);
 };
 
-void ProcessUnix::becomeDaemon()
+inline void ProcessUnix::becomeDaemon()
 {
     // Fork off the parent process
     pid_t pid = fork();
@@ -77,24 +77,24 @@ void ProcessUnix::becomeDaemon()
     open("/dev/null", O_RDWR);
 }
 
-int ProcessUnix::getPid()
+inline int ProcessUnix::getPid()
 {
     return getpid();
 }
 
-int ProcessUnix::getPriority()
+inline int ProcessUnix::getPriority()
 {
     return getpriority(PRIO_PROCESS, getPid());
 }
 
-void ProcessUnix::setPriority(int priority)
+inline void ProcessUnix::setPriority(int priority)
 {
     if (setpriority(PRIO_PROCESS, getPid(), priority) == -1) {
         throw SystemException(fmt::format("Failed to set a priority of process, setpriority() failed"));
     }
 }
 
-void ProcessUnix::setUser(const std::string &user)
+inline void ProcessUnix::setUser(const std::string &user)
 {
     // Not root, OK
     if (geteuid() != 0) {
@@ -112,7 +112,7 @@ void ProcessUnix::setUser(const std::string &user)
     }
 }
 
-void ProcessUnix::setGroup(const std::string &group)
+inline void ProcessUnix::setGroup(const std::string &group)
 {
     // Not root, OK
     if (getegid() != 0) {
@@ -130,7 +130,7 @@ void ProcessUnix::setGroup(const std::string &group)
     }
 }
 
-std::string ProcessUnix::getWorkingDirectory()
+inline std::string ProcessUnix::getWorkingDirectory()
 {
     char cwd[MAX_PATH_LEN];
 
@@ -141,7 +141,7 @@ std::string ProcessUnix::getWorkingDirectory()
     return std::string(cwd);
 }
 
-void ProcessUnix::setWorkingDirectory(const std::string &workdir)
+inline void ProcessUnix::setWorkingDirectory(const std::string &workdir)
 {
     if ((chdir(workdir.c_str())) < 0) {
         throw SystemException(fmt::format("Failed to change working directory, chdir({}) failed", workdir));
