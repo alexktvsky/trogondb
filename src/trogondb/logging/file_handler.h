@@ -9,7 +9,7 @@ namespace logging {
 
 class FileHandler : public Handler {
 public:
-    FileHandler(const std::string &filename);
+    FileHandler(const std::string &fileName);
 };
 
 } // namespace logging

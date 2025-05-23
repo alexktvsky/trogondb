@@ -5,8 +5,8 @@
 namespace trogondb {
 namespace logging {
 
-FileHandler::FileHandler(const std::string &filename)
-    : Handler(std::make_shared<spdlog::sinks::basic_file_sink_mt>(filename))
+FileHandler::FileHandler(const std::string &fileName)
+    : Handler(std::make_shared<spdlog::sinks::basic_file_sink_mt>(fileName))
 {
     // ...
 }

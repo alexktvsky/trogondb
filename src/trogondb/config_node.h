@@ -19,7 +19,7 @@ public:
 
 class Node {
 public:
-    static Node createRootNode(const std::string &filename);
+    static Node createRootNode(const std::string &fileName);
 
     Node getChild(const std::string &nodeName) const;
 
@@ -51,13 +51,13 @@ public:
 
     std::list<Node> getNodes() const;
 
-    static void checkForUnusedNodes(const Node &root);
+    void checkForUnusedNodes();
 
 private:
     Node(const YAML::Node &node,
          const std::optional<YAML::Node> &parent,
          const std::string &path,
-         const std::string &filename,
+         const std::string &fileName,
          const std::shared_ptr<std::stringstream> &fileBuffer,
          const std::shared_ptr<std::list<Node>> &usedNodes);
 

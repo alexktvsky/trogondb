@@ -7,24 +7,24 @@ namespace trogondb {
 Node::Node(const YAML::Node &node,
            const std::optional<YAML::Node> &parent,
            const std::string &path,
-           const std::string &filename,
+           const std::string &fileName,
            const std::shared_ptr<std::stringstream> &fileBuffer,
            const std::shared_ptr<std::list<Node>> &usedNodes)
     : m_node(node)
     , m_parent(parent)
     , m_path(path)
-    , m_fileName(filename)
+    , m_fileName(fileName)
     , m_fileBuffer(fileBuffer)
     , m_usedNodes(usedNodes)
 {
     // ...
 }
 
-Node Node::createRootNode(const std::string &filename)
+Node Node::createRootNode(const std::string &fileName)
 {
-    std::ifstream file(filename);
+    std::ifstream file(fileName);
     if (!file.is_open()) {
-        throw ConfigFileException(fmt::format("Failed to open config file '{}'", filename));
+        throw ConfigFileException(fmt::format("Failed to open config file '{}'", fileName));
     }
 
     auto fileBuffer = std::make_shared<std::stringstream>();
@@ -36,12 +36,12 @@ Node Node::createRootNode(const std::string &filename)
         node = YAML::Load(fileBuffer->str());
     }
     catch (const YAML::BadFile &e) {
-        throw ConfigFileException(fmt::format("Failed to load config file '{}'", filename));
+        throw ConfigFileException(fmt::format("Failed to load config file '{}'", fileName));
     }
 
     auto usedNodes = std::make_shared<std::list<Node>>();
 
-    return Node(node, std::nullopt, "", filename, fileBuffer, usedNodes);
+    return Node(node, std::nullopt, "", fileName, fileBuffer, usedNodes);
 }
 
 Node Node::getChild(const std::string &nodeName) const
@@ -182,10 +182,10 @@ void Node::traverseNode(const Node &root, std::list<Node> *outputNodes)
     }
 }
 
-void Node::checkForUnusedNodes(const Node &root)
+void Node::checkForUnusedNodes()
 {
-    std::list<Node> usedNodes = root.getUsedNodes();
-    std::list<Node> nodes = root.getNodes();
+    std::list<Node> usedNodes = getUsedNodes();
+    std::list<Node> nodes = getNodes();
     std::string message;
     bool checkFailed = false;
 

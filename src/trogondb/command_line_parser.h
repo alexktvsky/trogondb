@@ -18,13 +18,13 @@ public:
     std::string getOptionValue(const std::string &opt) const;
     std::vector<std::string> getArgs() const;
 private:
-    struct CommandLineOption {
+    struct Option {
         const std::string opt;
         const std::string longOpt;
         const bool hasArg;
     };
 
-    std::vector<CommandLineOption> m_options;
+    std::vector<Option> m_options;
     std::vector<std::string> m_parsedArguments;
     std::unordered_map<std::string, std::string> m_parsedOptions;
 };

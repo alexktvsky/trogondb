@@ -8,7 +8,7 @@ CommandLineParser::CommandLineParser() {}
 
 void CommandLineParser::addOption(const std::string &opt, const std::string &longOpt, bool hasArg)
 {
-    m_options.push_back(CommandLineOption {opt, longOpt, hasArg});
+    m_options.push_back(Option {opt, longOpt, hasArg});
 }
 
 void CommandLineParser::addOption(const std::string &longOpt, bool hasArg)
@@ -29,7 +29,7 @@ void CommandLineParser::parse(const std::vector<std::string> &args)
             continue;
         }
 
-        for (const CommandLineOption &option : m_options) {
+        for (const Option &option : m_options) {
             if (opt == ("-" + option.opt) || opt == ("--" + option.longOpt)) {
                 if (option.hasArg) {
                     ++iter;
