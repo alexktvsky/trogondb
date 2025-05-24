@@ -53,8 +53,8 @@ endif()
 target_link_options(${PROJECT_NAME}
 PRIVATE
     # -static
-    -static-libstdc++
-    -static-libgcc
+    # -static-libstdc++
+    # -static-libgcc
 )
 
 target_link_libraries(${PROJECT_NAME} PRIVATE ${CMAKE_REQUIRED_LIBRARIES})

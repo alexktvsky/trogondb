@@ -3,7 +3,7 @@ from conan.tools.cmake import CMakeToolchain
 from conan.tools.cmake import CMakeDeps
 
 
-class RTServerConan(ConanFile):
+class TrogondbConanFile(ConanFile):
     name = 'trogondb'
     version = '1.0'
     settings = 'os', 'compiler', 'build_type', 'arch'
@@ -14,12 +14,12 @@ class RTServerConan(ConanFile):
     def requirements(self):
         self.requires('fmt/11.1.3')
         self.requires('spdlog/1.15.1')
-        self.requires('boost/1.86.0')
-        self.requires('asio/1.32.0')
+        self.requires('boost/1.87.0')
+        self.requires('asio/1.34.2')
         self.requires('yaml-cpp/0.8.0')
 
     def build_requirements(self):
-        self.tool_requires('cmake/3.25.1')
+        self.tool_requires('cmake/3.31.6')
 
     def layout(self):
         # cmake_layout(self)

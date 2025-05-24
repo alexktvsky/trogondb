@@ -48,7 +48,3 @@ boost/*:without_system=False
 boost/*:without_exception=False
 boost/*:without_thread=False
 boost/*:without_container=False
-
-[buildenv]
-CC=clang-19
-CXX=clang++-19

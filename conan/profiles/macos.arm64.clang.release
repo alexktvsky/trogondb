@@ -1,6 +1,6 @@
 [settings]
 os=Macos
-arch=arm64
+arch=armv8
 build_type=Release
 compiler=clang
 compiler.version=18
@@ -51,5 +51,5 @@ boost/*:without_thread=False
 boost/*:without_container=False
 
 [buildenv]
-CC=clang-19
-CXX=clang++-19
+CC=clang
+CXX=clang++
