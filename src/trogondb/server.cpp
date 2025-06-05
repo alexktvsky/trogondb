@@ -2,6 +2,7 @@
 
 #include <chrono>
 #include <thread>
+#include <boost/asio.hpp>
 
 #include "trogondb/logging/file_handler.h"
 #include "trogondb/logging/stream_handler.h"

@@ -11,14 +11,14 @@ namespace trogondb {
 
 class Store {
 public:
-    void set(const std::string &key, const std::string &value,
-             std::optional<std::chrono::steady_clock::time_point> expiry = std::nullopt);
+    void setValue(const std::string &key, const std::string &value,
+                  std::optional<std::chrono::steady_clock::time_point> expiry = std::nullopt);
 
-    std::optional<std::string> get(const std::string &key);
+    std::optional<std::string> getValue(const std::string &key);
 
-    bool exists(const std::string &key) const;
+    bool isExists(const std::string &key) const;
 
-    void del(const std::string &key);
+    void delValue(const std::string &key);
 
 private:
     std::unordered_map<std::string, Entry> m_data;
