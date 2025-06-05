@@ -15,6 +15,8 @@ public:
     void start();
     void stop();
     void restart();
+
+
 private:
     static std::shared_ptr<logging::Logger> createLogger(const std::shared_ptr<Config> &config);
     void initializeProcess(const std::shared_ptr<Config> &config);
