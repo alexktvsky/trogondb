@@ -15,7 +15,7 @@ Server::Server(const std::shared_ptr<Config> &config)
 Server::Server(std::shared_ptr<Config> &&config)
     : m_config(std::move(config))
     , m_logger(createLogger(m_config))
-    , m_store()
+    , m_store(std::make_shared<Store>())
     , m_io(std::make_shared<boost::asio::io_context>())
 {
     // ...
@@ -74,18 +74,14 @@ void Server::initialize()
 {
     initializeProcess(m_config);
 
-    boost::asio::ip::tcp::endpoint endpoint(boost::asio::ip::tcp::v4(), m_config->port);
-    m_acceptor = std::make_shared<boost::asio::ip::tcp::acceptor>(*m_io, endpoint);
+    m_acceptor = std::make_shared<boost::asio::ip::tcp::acceptor>(*m_io, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), m_config->port));
 }
 
 void Server::start()
 {
     initialize();
-
-    m_logger->info("Starting server with pid {} at dir {}", os::Process::getPid(), os::Process::getWorkingDirectory());
-
+    m_logger->info("Starting server with pid {}", os::Process::getPid());
     doAccept();
-
     m_io->run();
 }
 
@@ -106,12 +102,14 @@ void Server::doAccept()
 
 void Server::onAccept(const boost::system::error_code &err, boost::asio::ip::tcp::socket socket)
 {
-    if (!err) {
-        auto session = std::make_shared<Session>(std::move(socket), m_store);
+    if (err) {
+        m_logger->error("Failed to onAccept(): {}", err.message());
+    } else {
+        auto session = std::make_shared<Session>(std::move(socket), m_store, m_logger);
         m_sessions.push_back(session);
         session->start();
     }
-    std::printf("****\n");
+
     doAccept();
 }
 

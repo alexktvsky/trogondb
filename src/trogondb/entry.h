@@ -9,8 +9,12 @@ namespace trogondb {
 class Entry {
 public:
     Entry() = default;
-    Entry(std::string val, std::optional<std::chrono::steady_clock::time_point> exp = std::nullopt);
-    const std::string& value() const;
+    Entry(const std::string &value, const std::optional<std::chrono::steady_clock::time_point> &expiry = std::nullopt);
+    Entry(const Entry &other);
+    Entry &operator=(const Entry &other);
+    Entry &operator=(Entry &&other) noexcept;
+    Entry(Entry &&other) noexcept;
+    const std::string &value() const;
     bool isExpired() const;
 
 private:

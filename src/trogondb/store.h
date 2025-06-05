@@ -18,7 +18,7 @@ public:
 
     std::optional<std::string> getValue(const std::string &key);
 
-    bool isExists(const std::string &key) const;
+    bool isExists(const std::string &key);
 
     void delValue(const std::string &key);
 

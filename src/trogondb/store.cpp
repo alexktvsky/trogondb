@@ -23,13 +23,15 @@ std::optional<std::string> Store::getValue(const std::string &key)
     return it->second.value();
 }
 
-bool Store::isExists(const std::string &key) const
+bool Store::isExists(const std::string &key)
 {
     auto it = m_data.find(key);
-    if (it == m_data.end()) return false;
+    if (it == m_data.end()) {
+        return false;
+    }
 
     if (it->second.isExpired()) {
-        // TODO: Add cleanup
+        m_data.erase(it);
         return false;
     }
 

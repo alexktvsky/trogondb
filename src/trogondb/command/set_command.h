@@ -18,10 +18,10 @@ public:
     std::string execute() override;
 
 private:
-    std::shared_ptr<Store> m_store;
     std::string m_key;
     std::string m_val;
     std::optional<int64_t> m_expiryMs;
+    std::shared_ptr<Store> m_store;
 };
 
 inline SetCommand::SetCommand(const std::shared_ptr<Store> &store, const std::vector<std::string> &args)

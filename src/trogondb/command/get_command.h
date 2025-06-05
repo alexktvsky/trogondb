@@ -14,12 +14,13 @@ public:
     std::string execute() override;
 
 private:
-    std::shared_ptr<Store> m_store;
     std::string m_key;
+    std::shared_ptr<Store> m_store;
 };
 
 inline GetCommand::GetCommand(const std::shared_ptr<Store> &store, const std::string &key)
     : m_key(key)
+    , m_store(store)
 {
     // ...
 }
@@ -31,6 +32,7 @@ std::string GetCommand::execute()
         std::string val = opt.value();
         return "$" + std::to_string(val.size()) + "\r\n" + val + "\r\n";
     }
+
     return "$-1\r\n";
 }
 

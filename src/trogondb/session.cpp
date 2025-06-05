@@ -1,27 +1,33 @@
 #include "trogondb/session.h"
+
+#include <fmt/format.h>
+
 #include "trogondb/command/ping_command.h"
 #include "trogondb/command/echo_command.h"
 #include "trogondb/command/get_command.h"
 #include "trogondb/command/set_command.h"
+#include "trogondb/exception.h"
+#include "trogondb/utils.h"
 
 namespace trogondb {
 
-Session::Session(boost::asio::ip::tcp::socket socket, const std::shared_ptr<Store> &store)
+Session::Session(boost::asio::ip::tcp::socket socket, const std::shared_ptr<Store> &store, const std::shared_ptr<logging::Logger> &logger)
     : m_socket(std::move(socket))
-    , m_store(store)
     , m_state(SessionState::WAITING_FOR_ARRAY_HEADER)
     , m_writeOffset(0)
     , m_expectedArgsCount(0)
     , m_argsRead(0)
     , m_expectedBulkLength(0)
     , m_timer(m_socket.get_executor())
+    , m_store(store)
+    , m_logger(logger)
 {
     // ...
 }
 
 void Session::start()
 {
-    std::printf("[accept] New client connected\n");
+    m_logger->info("New client connected {}", m_socket.remote_endpoint().address().to_string());
     doReadLine();
 }
 
@@ -31,53 +37,79 @@ void Session::startTimeout()
     m_timer.async_wait(std::bind(&Session::onTimeout, shared_from_this(), std::placeholders::_1));
 }
 
-void Session::onTimeout(const boost::system::error_code& err)
+void Session::onTimeout(const boost::system::error_code &err)
 {
-    if (!err) {
-        std::printf("[timeout] Client idle, closing connection\n");
-        m_state = SessionState::ERROR;
-        m_socket.close();
-        // m_server->removeSession(shared_from_this());
+    if (err) {
+        return;
     }
+    m_logger->info("Client idle, closing connection");
+    m_state = SessionState::ERROR;
+    m_socket.close();
+    // m_server->removeSession(shared_from_this());
 }
 
 void Session::doReadLine()
 {
-    auto self = shared_from_this();
-    auto handler = std::bind(&Session::onReadLine, self, std::placeholders::_1, std::placeholders::_2);
-    boost::asio::async_read_until(m_socket, m_readBuffer, "\r\n", handler);
+    boost::asio::async_read_until(
+        m_socket, m_readBuffer, "\r\n",
+        std::bind(&Session::onReadLine, shared_from_this(), std::placeholders::_1, std::placeholders::_2));
 
     startTimeout();
 }
 
-void Session::onReadLine(const boost::system::error_code& err, size_t)
+void Session::onReadLine(const boost::system::error_code &err, size_t)
 {
     if (err) {
-        return closeWithError(err, "read");
+        if (err == boost::asio::error::eof) {
+            m_logger->info("Client closed connection");
+        } else if (err == boost::asio::error::connection_reset) {
+            m_logger->info("Client crashed or reset connection");
+        } else {
+            m_logger->error("Failed to onReadLine(): {}", err.message());
+        }
+
+        close();
+        return;
     }
 
     std::istream is(&m_readBuffer);
     std::string line;
     std::getline(is, line);
-    if (!line.empty() && line.back() == '\r') line.pop_back();
-    if (line.empty()) return enterError("Empty line");
+    if (!line.empty() && line.back() == '\r') {
+        line.pop_back();
+    }
+    if (line.empty()) {
+        m_logger->error("Failed to onReadLine(): Empty line");
+        close();
+        return;
+    }
 
     switch (m_state) {
         case SessionState::WAITING_FOR_ARRAY_HEADER:
-            if (line[0] != '*') return enterError("Expected array");
+            if (line[0] != '*') {
+                m_logger->error("Failed to onReadLine(): Expected array");
+                close();
+                return;
+            }
             m_expectedArgsCount = std::stoi(line.substr(1));
             m_argsRead = 0;
             m_parsedArgs.clear();
             m_state = SessionState::WAITING_FOR_BULK_LENGTH;
             break;
         case SessionState::WAITING_FOR_BULK_LENGTH:
-            if (line[0] != '$') return enterError("Expected bulk length");
+            if (line[0] != '$') {
+                m_logger->error("Failed to onReadLine(): Expected bulk length");
+                close();
+                return;
+            }
             m_expectedBulkLength = std::stoi(line.substr(1));
             m_state = SessionState::WAITING_FOR_BULK_BODY;
             doReadBody();
             return;
         default:
-            return enterError("Invalid state in onReadLine");
+            m_logger->error("Failed to onReadLine(): Invalid state in onReadLine()");
+            close();
+            return;
     }
 
     doReadLine();
@@ -91,15 +123,26 @@ void Session::doReadBody()
         return;
     }
 
-    boost::asio::async_read(m_socket, m_readBuffer, boost::asio::transfer_exactly(needed),
+    boost::asio::async_read(
+        m_socket, m_readBuffer, boost::asio::transfer_exactly(needed),
         std::bind(&Session::onReadBody, shared_from_this(), std::placeholders::_1, std::placeholders::_2));
+
     startTimeout();
 }
 
-void Session::onReadBody(const boost::system::error_code& err, size_t)
+void Session::onReadBody(const boost::system::error_code &err, size_t)
 {
     if (err) {
-        return closeWithError(err, "body read");
+        if (err == boost::asio::error::eof) {
+            m_logger->info("Client closed connection");
+        } else if (err == boost::asio::error::connection_reset) {
+            m_logger->info("Client crashed or reset connection");
+        } else {
+            m_logger->error("Failed to onReadBody(): {}", err.message());
+        }
+
+        close();
+        return;
     }
 
     std::istream is(&m_readBuffer);
@@ -123,7 +166,7 @@ std::unique_ptr<ICommand> Session::createCommand(const std::vector<std::string> 
     if (args.empty()) {
         return nullptr;
     }
-    std::string cmd = toLower(args[0]);
+    std::string cmd = stringToLower(args[0]);
 
     if (cmd == "ping") {
         return std::make_unique<PingCommand>();
@@ -138,7 +181,7 @@ std::unique_ptr<ICommand> Session::createCommand(const std::vector<std::string> 
         return std::make_unique<SetCommand>(m_store, args);
     }
 
-    // throw Exception();
+    throw UnknowCommandException(fmt::format("Unknow command \'{}\'", cmd));
 }
 
 void Session::executeCommand()
@@ -159,13 +202,23 @@ void Session::doWrite()
 {
     auto slice = boost::asio::buffer(m_writeBuffer.data() + m_writeOffset, m_writeBuffer.size() - m_writeOffset);
 
-    boost::asio::async_write(m_socket, slice, std::bind(&Session::onWrite, shared_from_this(), std::placeholders::_1, std::placeholders::_2));
+    boost::asio::async_write(
+        m_socket, slice, std::bind(&Session::onWrite, shared_from_this(), std::placeholders::_1, std::placeholders::_2));
 }
 
-void Session::onWrite(const boost::system::error_code& err, size_t n)
+void Session::onWrite(const boost::system::error_code &err, size_t n)
 {
     if (err) {
-        return closeWithError(err, "write");
+        if (err == boost::asio::error::eof) {
+            m_logger->info("Client closed connection");
+        } else if (err == boost::asio::error::connection_reset) {
+            m_logger->info("Client crashed or reset connection");
+        } else {
+            m_logger->error("Failed to onWrite(): {}", err.message());
+        }
+
+        close();
+        return;
     }
 
     m_writeOffset += n;
@@ -177,35 +230,11 @@ void Session::onWrite(const boost::system::error_code& err, size_t n)
     }
 }
 
-void Session::closeWithError(const boost::system::error_code& err, const char* where)
+void Session::close()
 {
     m_timer.cancel();
-    if (err == boost::asio::error::eof) {
-        std::printf("[disconnect] Client closed connection\n");
-    } else if (err == boost::asio::error::connection_reset) {
-        std::printf("[reset] Client crashed or reset connection\n");
-    } else {
-        std::printf("[%s error] %s\n", where, err.message().c_str());
-    }
     m_state = SessionState::ERROR;
     // m_server->removeSession(shared_from_this());
-}
-
-void Session::enterError(const char* msg)
-{
-    m_timer.cancel();
-    std::printf("[protocol error] %s\n", msg);
-    m_state = SessionState::ERROR;
-    // m_server->removeSession(shared_from_this());
-}
-
-std::string Session::toLower(const std::string& s)
-{
-    std::string r;
-    for (char c : s) {
-        r += std::tolower(static_cast<unsigned char>(c));
-    }
-    return r;
 }
 
 } // namespace trogondb

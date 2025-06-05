@@ -8,6 +8,8 @@
 
 #include "trogondb/command/command.h"
 #include "trogondb/store.h"
+#include "trogondb/logging/logger.h"
+#include "trogondb/exception.h"
 
 namespace trogondb {
 
@@ -23,9 +25,11 @@ enum class SessionState {
 
 class Session : public std::enable_shared_from_this<Session> {
 public:
-    Session(boost::asio::ip::tcp::socket socket, const std::shared_ptr<Store> &store);
+    Session(boost::asio::ip::tcp::socket socket, const std::shared_ptr<Store> &store, const std::shared_ptr<logging::Logger> &logger);
 
     void start();
+
+    void close();
 
 private:
     void startTimeout();
@@ -48,12 +52,6 @@ private:
 
     void onWrite(const boost::system::error_code &err, size_t n);
 
-    void closeWithError(const boost::system::error_code &err, const char *where);
-
-    void enterError(const char *msg);
-
-    static std::string toLower(const std::string& s);
-
 private:
     boost::asio::ip::tcp::socket m_socket;
     SessionState m_state;
@@ -67,11 +65,16 @@ private:
     int m_expectedBulkLength;
     std::vector<std::string> m_parsedArgs;
 
+    static constexpr int TIMEOUT_SECONDS = 10;
     boost::asio::steady_timer m_timer;
 
     std::shared_ptr<Store> m_store;
+    std::shared_ptr<logging::Logger> m_logger;
+};
 
-    static constexpr int TIMEOUT_SECONDS = 10;
+class UnknowCommandException : public Exception {
+public:
+    using Exception::Exception;
 };
 
 } // namespace trogondb
