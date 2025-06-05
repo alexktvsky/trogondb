@@ -1,5 +1,5 @@
 host: localhost
-port: 57268
+port: 6379
 daemon: false
 workdir: /
 priority: 0

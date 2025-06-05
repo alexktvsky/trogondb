@@ -2,7 +2,6 @@
 
 #include <chrono>
 #include <thread>
-#include <boost/asio.hpp>
 
 #include "trogondb/logging/file_handler.h"
 #include "trogondb/logging/stream_handler.h"
@@ -16,6 +15,8 @@ Server::Server(const std::shared_ptr<Config> &config)
 Server::Server(std::shared_ptr<Config> &&config)
     : m_config(std::move(config))
     , m_logger(createLogger(m_config))
+    , m_store()
+    , m_io(std::make_shared<boost::asio::io_context>())
 {
     // ...
 }
@@ -72,6 +73,9 @@ void Server::initializeProcess(const std::shared_ptr<Config> &config)
 void Server::initialize()
 {
     initializeProcess(m_config);
+
+    boost::asio::ip::tcp::endpoint endpoint(boost::asio::ip::tcp::v4(), m_config->port);
+    m_acceptor = std::make_shared<boost::asio::ip::tcp::acceptor>(*m_io, endpoint);
 }
 
 void Server::start()
@@ -80,7 +84,9 @@ void Server::start()
 
     m_logger->info("Starting server with pid {} at dir {}", os::Process::getPid(), os::Process::getWorkingDirectory());
 
-    std::this_thread::sleep_for(std::chrono::minutes(3));
+    doAccept();
+
+    m_io->run();
 }
 
 void Server::stop()
@@ -91,6 +97,27 @@ void Server::stop()
 void Server::restart()
 {
     // ...
+}
+
+void Server::doAccept()
+{
+    m_acceptor->async_accept(std::bind(&Server::onAccept, this, std::placeholders::_1, std::placeholders::_2));
+}
+
+void Server::onAccept(const boost::system::error_code &err, boost::asio::ip::tcp::socket socket)
+{
+    if (!err) {
+        auto session = std::make_shared<Session>(std::move(socket), m_store);
+        m_sessions.push_back(session);
+        session->start();
+    }
+    std::printf("****\n");
+    doAccept();
+}
+
+void Server::removeSession(const std::shared_ptr<Session> &session)
+{
+    m_sessions.remove(session);
 }
 
 } // namespace trogondb

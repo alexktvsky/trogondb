@@ -33,6 +33,9 @@ PRIVATE
     src/trogondb/config_node.cpp
     src/trogondb/config_parser.cpp
     src/trogondb/command_line_parser.cpp
+    src/trogondb/store.cpp
+    src/trogondb/entry.cpp
+    src/trogondb/session.cpp
     src/trogondb/os/process.cpp
     src/trogondb/logging/logger.cpp
     src/trogondb/logging/level.cpp

@@ -6,6 +6,9 @@
 #include <memory>
 #include <boost/asio.hpp>
 
+#include "trogondb/command/command.h"
+#include "trogondb/store.h"
+
 namespace trogondb {
 
 enum class SessionState {
@@ -20,7 +23,7 @@ enum class SessionState {
 
 class Session : public std::enable_shared_from_this<Session> {
 public:
-    Session(boost::asio::ip::tcp::socket socket, Server &server);
+    Session(boost::asio::ip::tcp::socket socket, const std::shared_ptr<Store> &store);
 
     void start();
 
@@ -37,7 +40,7 @@ private:
 
     void onReadBody(const boost::system::error_code &err, size_t);
 
-    std::unique_ptr<Command> makeCommand(const std::vector<std::string> &args);
+    std::unique_ptr<ICommand> createCommand(const std::vector<std::string> &args);
 
     void executeCommand();
 
@@ -53,7 +56,6 @@ private:
 
 private:
     boost::asio::ip::tcp::socket m_socket;
-    Server &m_server;
     SessionState m_state;
 
     boost::asio::streambuf m_readBuffer;
@@ -66,6 +68,9 @@ private:
     std::vector<std::string> m_parsedArgs;
 
     boost::asio::steady_timer m_timer;
+
+    std::shared_ptr<Store> m_store;
+
     static constexpr int TIMEOUT_SECONDS = 10;
 };
 
