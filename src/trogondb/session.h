@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstddef>
+#include <cstdint>
 #include <string>
 #include <vector>
 #include <memory>
@@ -13,7 +14,7 @@
 
 namespace trogondb {
 
-enum class SessionState {
+enum class SessionState : uint8_t {
     WAITING_FOR_ARRAY_HEADER,
     WAITING_FOR_BULK_LENGTH,
     WAITING_FOR_BULK_BODY,
@@ -29,7 +30,7 @@ public:
 
     void start();
 
-    void close();
+    void cancel();
 
 private:
     void startTimeout();
@@ -38,11 +39,11 @@ private:
 
     void doReadLine();
 
-    void onReadLine(const boost::system::error_code &err, size_t);
+    void onReadLine(const boost::system::error_code &err, size_t /*unused*/);
 
     void doReadBody();
 
-    void onReadBody(const boost::system::error_code &err, size_t);
+    void onReadBody(const boost::system::error_code &err, size_t /*unused*/);
 
     std::unique_ptr<ICommand> createCommand(const std::vector<std::string> &args);
 
@@ -52,7 +53,6 @@ private:
 
     void onWrite(const boost::system::error_code &err, size_t n);
 
-private:
     boost::asio::ip::tcp::socket m_socket;
     SessionState m_state;
 
@@ -70,6 +70,8 @@ private:
 
     std::shared_ptr<Store> m_store;
     std::shared_ptr<logging::Logger> m_logger;
+
+    bool m_cancelled;
 };
 
 class UnknowCommandException : public Exception {

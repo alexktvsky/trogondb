@@ -26,6 +26,8 @@ private:
 
     void doAccept();
     void onAccept(const boost::system::error_code &err, boost::asio::ip::tcp::socket socket);
+
+    std::shared_ptr<Session> createSession(boost::asio::ip::tcp::socket socket);
     void removeSession(const std::shared_ptr<Session> &session);
 
     std::shared_ptr<Config> m_config;

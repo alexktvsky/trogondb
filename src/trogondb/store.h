@@ -13,8 +13,7 @@ class Store {
 public:
     Store() = default;
 
-    void setValue(const std::string &key, const std::string &value,
-                  std::optional<std::chrono::steady_clock::time_point> expiry = std::nullopt);
+    void setValue(const std::string &key, const std::string &value, std::optional<std::chrono::steady_clock::time_point> expiry = std::nullopt);
 
     std::optional<std::string> getValue(const std::string &key);
 

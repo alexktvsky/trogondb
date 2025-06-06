@@ -29,7 +29,7 @@ std::string GetCommand::execute()
 {
     auto opt = m_store->getValue(m_key);
     if (opt) {
-        std::string val = opt.value();
+        std::string const &val = opt.value();
         return "$" + std::to_string(val.size()) + "\r\n" + val + "\r\n";
     }
 

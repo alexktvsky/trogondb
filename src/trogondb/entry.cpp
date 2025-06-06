@@ -35,7 +35,6 @@ Entry &Entry::operator=(const Entry &other)
     return *this;
 }
 
-
 Entry &Entry::operator=(Entry &&other) noexcept
 {
     if (this == &other) {
@@ -59,4 +58,3 @@ bool Entry::isExpired() const
 }
 
 } // namespace trogondb
-
