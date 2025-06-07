@@ -3,6 +3,7 @@
 #include <chrono>
 #include <thread>
 
+#include "trogondb/os/process.h"
 #include "trogondb/logging/file_handler.h"
 #include "trogondb/logging/stream_handler.h"
 #include "trogondb/logging/rotating_file_handler.h"

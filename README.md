@@ -5,8 +5,6 @@ A key-value database compatible with Redis.
 
 ## How to build
 
-GNU/Linux:
-
 ```sh
 cd build
 conan install .. --profile:all ../conan/profiles/linux.x86_64.clang.release --build=missing

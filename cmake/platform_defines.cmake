@@ -32,22 +32,6 @@ return 0; }" MACOS)
 
 check_cxx_source_compiles("
 int main() {
-#if defined(_WIN32) || defined(__WIN32__)
-#else
-#error
-#endif
-return 0; }" WIN32)
-
-check_cxx_source_compiles("
-int main() {
-#if defined(__i386__)
-#else
-#error
-#endif
-return 0; }" X86_32)
-
-check_cxx_source_compiles("
-int main() {
 #if defined(__amd64__) || defined(__x86_64__)
 #else
 #error
@@ -62,9 +46,7 @@ int main() {
 #endif
 return 0; }" ARM64)
 
-if(X86_32)
-    set(ARCH_NAME "i386")
-elseif(X86_64)
+if(X86_64)
     set(ARCH_NAME "x86_64")
 elseif(ARM64)
     set(ARCH_NAME "arm64")
@@ -73,8 +55,7 @@ endif()
 if(NOT (LINUX AND X86_64 OR
         LINUX AND ARM64 OR
         MACOS AND X86_64 OR
-        MACOS AND ARM64 OR
-        WIN32 AND X86_64))
+        MACOS AND ARM64))
     message(FATAL_ERROR "Platform not supported")
 endif()
 

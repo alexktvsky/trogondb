@@ -8,11 +8,7 @@
 #include "trogondb/platform_defines.h"
 #include "trogondb/release.h"
 
-#if WIN32
-const std::string DEFAULT_CONFIG_FILENAME = "config/trogondb.yml";
-#else
 const std::string DEFAULT_CONFIG_FILENAME = "/etc/trogondb/trogondb.yml";
-#endif
 
 void printVersionInfo()
 {
@@ -55,7 +51,7 @@ int main(int argc, char **argv)
     const std::vector<std::string> args(argv + 1, argv + argc);
 
     try {
-        trogondb::CommandLineParser commandLineParser = parseArgs(args);
+        auto commandLineParser = parseArgs(args);
 
         if (commandLineParser.hasOption("help")) {
             printHelpInfo();

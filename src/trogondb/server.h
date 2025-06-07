@@ -1,10 +1,10 @@
 #pragma once
 
+#include <list>
 #include <memory>
 #include <boost/asio.hpp>
 
 #include "trogondb/config.h"
-#include "trogondb/os/process.h"
 #include "trogondb/logging/logger.h"
 #include "trogondb/store.h"
 #include "trogondb/session.h"
@@ -32,11 +32,12 @@ private:
 
     std::shared_ptr<Config> m_config;
     std::shared_ptr<logging::Logger> m_logger;
+
     std::shared_ptr<Store> m_store;
+    std::list<std::shared_ptr<Session>> m_sessions;
 
     std::shared_ptr<boost::asio::io_context> m_io;
     std::shared_ptr<boost::asio::ip::tcp::acceptor> m_acceptor;
-    std::list<std::shared_ptr<Session>> m_sessions;
 };
 
 } // namespace trogondb
