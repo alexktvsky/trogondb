@@ -11,10 +11,8 @@ RUN apt update && apt install -y \
     build-essential \
     curl
 
-RUN python3 -m pip install --upgrade pip --break-system-package && \
-    python3 -m pip install conan --break-system-package
+RUN python3 -m pip install conan --break-system-package
 
-ENV PATH="/root/.local/bin:${PATH}"
 ENV CC=clang
 ENV CXX=clang++
 
@@ -50,6 +48,8 @@ WORKDIR /app
 
 COPY --from=builder /app/build/bin/trogondb ./trogondb
 COPY --from=builder /app/trogondb.yml ./trogondb.yml
+
+USER nobody
 
 EXPOSE 6379
 
