@@ -6,7 +6,7 @@
 
 #include "trogondb/config.h"
 #include "trogondb/logging/logger.h"
-#include "trogondb/store.h"
+#include "trogondb/kv_store.h"
 #include "trogondb/session.h"
 
 namespace trogondb {
@@ -33,7 +33,7 @@ private:
     std::shared_ptr<Config> m_config;
     std::shared_ptr<logging::Logger> m_logger;
 
-    std::shared_ptr<Store> m_store;
+    std::shared_ptr<KeyValueStore> m_store;
     std::list<std::shared_ptr<Session>> m_sessions;
 
     std::shared_ptr<boost::asio::io_context> m_io;

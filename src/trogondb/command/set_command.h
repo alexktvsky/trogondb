@@ -7,24 +7,24 @@
 #include <memory>
 
 #include "trogondb/command/command.h"
-#include "trogondb/store.h"
+#include "trogondb/kv_store.h"
 #include "trogondb/utils.h"
 
 namespace trogondb {
 
 class SetCommand : public ICommand {
 public:
-    SetCommand(const std::shared_ptr<Store> &store, const std::vector<std::string> &args);
+    SetCommand(const std::shared_ptr<KeyValueStore> &store, const std::vector<std::string> &args);
     std::string execute() override;
 
 private:
     std::string m_key;
     std::string m_val;
     std::optional<int64_t> m_expiryMs;
-    std::shared_ptr<Store> m_store;
+    std::shared_ptr<KeyValueStore> m_store;
 };
 
-inline SetCommand::SetCommand(const std::shared_ptr<Store> &store, const std::vector<std::string> &args)
+inline SetCommand::SetCommand(const std::shared_ptr<KeyValueStore> &store, const std::vector<std::string> &args)
     : m_store(store)
 {
     m_key = args[1];

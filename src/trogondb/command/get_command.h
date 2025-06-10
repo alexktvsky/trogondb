@@ -4,21 +4,21 @@
 #include <memory>
 
 #include "trogondb/command/command.h"
-#include "trogondb/store.h"
+#include "trogondb/kv_store.h"
 
 namespace trogondb {
 
 class GetCommand : public ICommand {
 public:
-    GetCommand(const std::shared_ptr<Store> &store, const std::string &key);
+    GetCommand(const std::shared_ptr<KeyValueStore> &store, const std::string &key);
     std::string execute() override;
 
 private:
     std::string m_key;
-    std::shared_ptr<Store> m_store;
+    std::shared_ptr<KeyValueStore> m_store;
 };
 
-inline GetCommand::GetCommand(const std::shared_ptr<Store> &store, const std::string &key)
+inline GetCommand::GetCommand(const std::shared_ptr<KeyValueStore> &store, const std::string &key)
     : m_key(key)
     , m_store(store)
 {

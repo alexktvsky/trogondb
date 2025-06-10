@@ -8,7 +8,7 @@
 #include <boost/asio.hpp>
 
 #include "trogondb/command/command.h"
-#include "trogondb/store.h"
+#include "trogondb/kv_store.h"
 #include "trogondb/logging/logger.h"
 #include "trogondb/exception.h"
 
@@ -26,7 +26,7 @@ enum class SessionState : uint8_t {
 
 class Session : public std::enable_shared_from_this<Session> {
 public:
-    Session(boost::asio::ip::tcp::socket socket, const std::shared_ptr<Store> &store, const std::shared_ptr<logging::Logger> &logger);
+    Session(boost::asio::ip::tcp::socket socket, const std::shared_ptr<KeyValueStore> &store, const std::shared_ptr<logging::Logger> &logger);
 
     void start();
 
@@ -68,7 +68,7 @@ private:
     static constexpr int TIMEOUT_SECONDS = 10;
     boost::asio::steady_timer m_timer;
 
-    std::shared_ptr<Store> m_store;
+    std::shared_ptr<KeyValueStore> m_store;
     std::shared_ptr<logging::Logger> m_logger;
 
     bool m_cancelled;

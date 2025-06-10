@@ -16,7 +16,7 @@ Server::Server(const std::shared_ptr<Config> &config)
 Server::Server(std::shared_ptr<Config> &&config)
     : m_config(std::move(config))
     , m_logger(createLogger(m_config))
-    , m_store(std::make_shared<Store>())
+    , m_store(std::make_shared<KeyValueStore>())
     , m_io(std::make_shared<boost::asio::io_context>())
 {
     // ...
