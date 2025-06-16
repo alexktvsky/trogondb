@@ -3,6 +3,7 @@
 #include <string>
 
 namespace trogondb {
+namespace cmd {
 
 class ICommand {
 public:
@@ -10,4 +11,5 @@ public:
     virtual ~ICommand() = default;
 };
 
+} // namespace cmd
 } // namespace trogondb

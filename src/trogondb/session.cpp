@@ -172,7 +172,7 @@ void Session::onReadBody(const boost::system::error_code &err, size_t /*unused*/
     }
 }
 
-std::unique_ptr<ICommand> Session::createCommand(const std::vector<std::string> &args)
+std::unique_ptr<cmd::ICommand> Session::createCommand(const std::vector<std::string> &args)
 {
     if (args.empty()) {
         return nullptr;
@@ -180,16 +180,16 @@ std::unique_ptr<ICommand> Session::createCommand(const std::vector<std::string> 
     std::string cmd = stringToLower(args[0]);
 
     if (cmd == "ping") {
-        return std::make_unique<PingCommand>();
+        return std::make_unique<cmd::PingCommand>();
     }
     if (cmd == "echo" && args.size() == 2) {
-        return std::make_unique<EchoCommand>(args[1]);
+        return std::make_unique<cmd::EchoCommand>(args[1]);
     }
     if (cmd == "get" && args.size() == 2) {
-        return std::make_unique<GetCommand>(m_store, args[1]);
+        return std::make_unique<cmd::GetCommand>(m_store, args[1]);
     }
     if ((cmd == "set") && (args.size() == 3 || args.size() == 5)) {
-        return std::make_unique<SetCommand>(m_store, args);
+        return std::make_unique<cmd::SetCommand>(m_store, args);
     }
 
     throw UnknowCommandException(fmt::format("Unknow command \'{}\'", cmd));

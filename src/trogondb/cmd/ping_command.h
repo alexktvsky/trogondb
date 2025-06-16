@@ -2,18 +2,15 @@
 
 #include <string>
 
-#include "trogondb/command.h"
+#include "trogondb/cmd/command.h"
 
 namespace trogondb {
+namespace cmd {
 
 class PingCommand : public ICommand {
 public:
     std::string execute() override;
 };
 
-inline std::string PingCommand::execute()
-{
-    return "+PONG\r\n";
-}
-
+} // namespace cmd
 } // namespace trogondb

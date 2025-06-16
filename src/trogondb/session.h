@@ -14,7 +14,7 @@
 
 namespace trogondb {
 
-enum class SessionState : uint8_t {
+enum class SessionState {
     WAITING_FOR_ARRAY_HEADER,
     WAITING_FOR_BULK_LENGTH,
     WAITING_FOR_BULK_BODY,
@@ -45,7 +45,7 @@ private:
 
     void onReadBody(const boost::system::error_code &err, size_t /*unused*/);
 
-    std::unique_ptr<ICommand> createCommand(const std::vector<std::string> &args);
+    std::unique_ptr<cmd::ICommand> createCommand(const std::vector<std::string> &args);
 
     void executeCommand();
 
