@@ -11,7 +11,9 @@
 
 namespace trogondb {
 
-Session::Session(boost::asio::ip::tcp::socket socket, const std::shared_ptr<KeyValueStore> &store, const std::shared_ptr<log::Logger> &logger)
+Session::Session(boost::asio::ip::tcp::socket socket,
+                 const std::shared_ptr<KeyValueStore> &store,
+                 const std::shared_ptr<log::Logger> &logger)
     : m_socket(std::move(socket))
     , m_state(SessionState::WAITING_FOR_ARRAY_HEADER)
     , m_writeOffset(0)
@@ -32,8 +34,8 @@ void Session::start()
 
 void Session::startTimeout()
 {
-    m_timer.expires_after(std::chrono::seconds(TIMEOUT_SECONDS));
-    m_timer.async_wait(std::bind(&Session::onTimeout, shared_from_this(), std::placeholders::_1));
+    // m_timer.expires_after(std::chrono::seconds(TIMEOUT_SECONDS));
+    // m_timer.async_wait(std::bind(&Session::onTimeout, shared_from_this(), std::placeholders::_1));
 }
 
 void Session::onTimeout(const boost::system::error_code &err)
@@ -170,37 +172,37 @@ void Session::onReadBody(const boost::system::error_code &err, size_t /*unused*/
     }
 }
 
-std::unique_ptr<cmd::ICommand> Session::createCommand(const std::vector<std::string> &args)
+std::optional<std::unique_ptr<cmd::ICommand>> Session::createCommand(const std::string &cmd, const std::vector<std::string> &args)
 {
-    if (args.empty()) {
-        return nullptr;
-    }
-    std::string cmd = stringToLower(args[0]);
-
     if (cmd == "ping") {
         return std::make_unique<cmd::PingCommand>();
     }
-    if (cmd == "echo" && args.size() == 2) {
-        return std::make_unique<cmd::EchoCommand>(args[1]);
+    if (cmd == "echo" && args.size() == 1) {
+        return std::make_unique<cmd::EchoCommand>(args[0]);
     }
-    if (cmd == "get" && args.size() == 2) {
-        return std::make_unique<cmd::GetCommand>(m_store, args[1]);
+    if (cmd == "get" && args.size() == 1) {
+        return std::make_unique<cmd::GetCommand>(m_store, args[0]);
     }
-    if ((cmd == "set") && (args.size() == 3 || args.size() == 5)) {
+    if ((cmd == "set") && (args.size() == 2 || args.size() == 4)) {
         return std::make_unique<cmd::SetCommand>(m_store, args);
     }
 
-    throw UnknowCommandException(fmt::format("Unknow command \'{}\'", cmd));
+    return std::nullopt;
 }
 
 void Session::executeCommand()
 {
-    auto command = createCommand(m_parsedArgs);
-    if (!command) {
-        m_writeBuffer = "-ERR unknown or malformed command\r\n";
+    // TODO: Improve performace
+    std::string cmd = stringToLower(m_parsedArgs[0]);
+    m_parsedArgs.erase(m_parsedArgs.begin());
+
+    auto result = createCommand(cmd, m_parsedArgs);
+    if (result) {
+        auto command = std::move(result.value());
+        m_writeBuffer = command->execute();
     }
     else {
-        m_writeBuffer = command->execute();
+        m_writeBuffer = "-ERR unknown or malformed command\r\n";
     }
 
     m_writeOffset = 0;

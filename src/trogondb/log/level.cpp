@@ -69,4 +69,4 @@ Level getLevelByName(const std::string &name)
 }
 
 } // namespace log
-} //namespace trogondb
+} // namespace trogondb

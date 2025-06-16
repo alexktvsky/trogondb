@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <optional>
 #include <boost/asio.hpp>
 
 #include "trogondb/cmd/command.h"
@@ -26,7 +27,9 @@ enum class SessionState : uint8_t {
 
 class Session : public std::enable_shared_from_this<Session> {
 public:
-    Session(boost::asio::ip::tcp::socket socket, const std::shared_ptr<KeyValueStore> &store, const std::shared_ptr<log::Logger> &logger);
+    Session(boost::asio::ip::tcp::socket socket,
+            const std::shared_ptr<KeyValueStore> &store,
+            const std::shared_ptr<log::Logger> &logger);
 
     void start();
 
@@ -45,7 +48,7 @@ private:
 
     void onReadBody(const boost::system::error_code &err, size_t /*unused*/);
 
-    std::unique_ptr<cmd::ICommand> createCommand(const std::vector<std::string> &args);
+    std::optional<std::unique_ptr<cmd::ICommand>> createCommand(const std::string &cmd, const std::vector<std::string> &args);
 
     void executeCommand();
 
@@ -53,6 +56,7 @@ private:
 
     void onWrite(const boost::system::error_code &err, size_t n);
 
+private:
     boost::asio::ip::tcp::socket m_socket;
     SessionState m_state;
 

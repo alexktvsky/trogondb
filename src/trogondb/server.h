@@ -30,6 +30,7 @@ private:
     std::shared_ptr<Session> createSession(boost::asio::ip::tcp::socket socket);
     void removeSession(const std::shared_ptr<Session> &session);
 
+private:
     std::shared_ptr<Config> m_config;
     std::shared_ptr<log::Logger> m_logger;
 

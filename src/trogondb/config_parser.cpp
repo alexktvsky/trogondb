@@ -77,7 +77,7 @@ size_t SizeWithUnit::parseString(const std::string &str)
     return size * multiplier;
 }
 
-} //namespace
+} // namespace
 
 namespace YAML {
 

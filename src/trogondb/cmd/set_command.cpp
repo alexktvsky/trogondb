@@ -6,10 +6,10 @@ namespace cmd {
 SetCommand::SetCommand(const std::shared_ptr<KeyValueStore> &store, const std::vector<std::string> &args)
     : m_store(store)
 {
-    m_key = args[1];
-    m_val = args[2];
+    m_key = args[0];
+    m_val = args[1];
 
-    if (args.size() == 5 && stringToLower(args[3]) == "px") {
+    if (args.size() == 4 && stringToLower(args[2]) == "px") {
         m_expiryMs = std::stoll(args[4]);
     }
 }
