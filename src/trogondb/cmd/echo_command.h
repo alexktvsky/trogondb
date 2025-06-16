@@ -2,7 +2,7 @@
 
 #include <string>
 
-#include "trogondb/command/command.h"
+#include "trogondb/command.h"
 
 namespace trogondb {
 

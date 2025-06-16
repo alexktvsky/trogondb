@@ -7,7 +7,7 @@
 #include <memory>
 #include <boost/asio.hpp>
 
-#include "trogondb/command/command.h"
+#include "trogondb/cmd/command.h"
 #include "trogondb/kv_store.h"
 #include "trogondb/logging/logger.h"
 #include "trogondb/exception.h"

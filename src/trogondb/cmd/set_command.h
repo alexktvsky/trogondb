@@ -6,7 +6,7 @@
 #include <chrono>
 #include <memory>
 
-#include "trogondb/command/command.h"
+#include "trogondb/command.h"
 #include "trogondb/kv_store.h"
 #include "trogondb/utils.h"
 

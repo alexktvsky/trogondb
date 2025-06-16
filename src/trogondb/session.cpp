@@ -2,10 +2,10 @@
 
 #include <fmt/format.h>
 
-#include "trogondb/command/ping_command.h"
-#include "trogondb/command/echo_command.h"
-#include "trogondb/command/get_command.h"
-#include "trogondb/command/set_command.h"
+#include "trogondb/cmd/ping_command.h"
+#include "trogondb/cmd/echo_command.h"
+#include "trogondb/cmd/get_command.h"
+#include "trogondb/cmd/set_command.h"
 #include "trogondb/exception.h"
 #include "trogondb/utils.h"
 

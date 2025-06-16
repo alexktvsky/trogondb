@@ -3,7 +3,7 @@
 #include <string>
 #include <memory>
 
-#include "trogondb/command/command.h"
+#include "trogondb/command.h"
 #include "trogondb/kv_store.h"
 
 namespace trogondb {
