@@ -3,7 +3,7 @@
 #include <string>
 #include <memory>
 
-#include "trogondb/logging/level.h"
+#include "trogondb/log/level.h"
 
 namespace spdlog {
 namespace sinks {
@@ -12,7 +12,7 @@ class sink;
 } // namespace spdlog
 
 namespace trogondb {
-namespace logging {
+namespace log {
 
 using HandlerImpl = spdlog::sinks::sink;
 
@@ -21,8 +21,8 @@ class Logger;
 class Handler {
     friend class Logger;
 public:
-    logging::Level getLevel() const;
-    void setLevel(logging::Level level);
+    log::Level getLevel() const;
+    void setLevel(log::Level level);
     void setPattern(const std::string &pattern);
     void flush();
 protected:
@@ -31,5 +31,5 @@ private:
     std::shared_ptr<HandlerImpl> m_impl;
 };
 
-} // namespace logging
+} // namespace log
 } // namespace trogondb

@@ -2,11 +2,11 @@
 
 #include <cstdio>
 
-#include "trogondb/logging/handler.h"
+#include "trogondb/log/handler.h"
 #include "trogondb/exception.h"
 
 namespace trogondb {
-namespace logging {
+namespace log {
 
 class StreamHandler : public Handler {
 public:
@@ -20,5 +20,5 @@ public:
     using Exception::Exception;
 };
 
-} // namespace logging
+} // namespace log
 } // namespace trogondb

@@ -29,25 +29,26 @@ PRIVATE
 target_sources(${PROJECT_NAME}
 PRIVATE
     src/trogondb/main.cpp
-    src/trogondb/server.cpp
+    src/trogondb/command_line_parser.cpp
     src/trogondb/config_node.cpp
     src/trogondb/config_parser.cpp
-    src/trogondb/command_line_parser.cpp
-    src/trogondb/utils.cpp
-    src/trogondb/kv_store.cpp
+    src/trogondb/server.cpp
+    src/trogondb/session.cpp
     src/trogondb/entry.cpp
+    src/trogondb/kv_store.cpp
+    src/trogondb/exception.cpp
+    src/trogondb/utils.cpp
+    src/trogondb/os/process.cpp
     src/trogondb/cmd/ping_command.cpp
     src/trogondb/cmd/echo_command.cpp
     src/trogondb/cmd/get_command.cpp
     src/trogondb/cmd/set_command.cpp
-    src/trogondb/session.cpp
-    src/trogondb/os/process.cpp
-    src/trogondb/logging/logger.cpp
-    src/trogondb/logging/level.cpp
-    src/trogondb/logging/handler.cpp
-    src/trogondb/logging/stream_handler.cpp
-    src/trogondb/logging/file_handler.cpp
-    src/trogondb/logging/rotating_file_handler.cpp
+    src/trogondb/log/logger.cpp
+    src/trogondb/log/level.cpp
+    src/trogondb/log/handler.cpp
+    src/trogondb/log/stream_handler.cpp
+    src/trogondb/log/file_handler.cpp
+    src/trogondb/log/rotating_file_handler.cpp
 )
 
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_17)

@@ -2,15 +2,15 @@
 
 #include <cstddef>
 
-#include "trogondb/logging/handler.h"
+#include "trogondb/log/handler.h"
 
 namespace trogondb {
-namespace logging {
+namespace log {
 
 class FileHandler : public Handler {
 public:
     FileHandler(const std::string &fileName);
 };
 
-} // namespace logging
+} // namespace log
 } // namespace trogondb

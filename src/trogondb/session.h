@@ -9,12 +9,12 @@
 
 #include "trogondb/cmd/command.h"
 #include "trogondb/kv_store.h"
-#include "trogondb/logging/logger.h"
+#include "trogondb/log/logger.h"
 #include "trogondb/exception.h"
 
 namespace trogondb {
 
-enum class SessionState {
+enum class SessionState : uint8_t {
     WAITING_FOR_ARRAY_HEADER,
     WAITING_FOR_BULK_LENGTH,
     WAITING_FOR_BULK_BODY,
@@ -26,7 +26,7 @@ enum class SessionState {
 
 class Session : public std::enable_shared_from_this<Session> {
 public:
-    Session(boost::asio::ip::tcp::socket socket, const std::shared_ptr<KeyValueStore> &store, const std::shared_ptr<logging::Logger> &logger);
+    Session(boost::asio::ip::tcp::socket socket, const std::shared_ptr<KeyValueStore> &store, const std::shared_ptr<log::Logger> &logger);
 
     void start();
 
@@ -69,7 +69,7 @@ private:
     boost::asio::steady_timer m_timer;
 
     std::shared_ptr<KeyValueStore> m_store;
-    std::shared_ptr<logging::Logger> m_logger;
+    std::shared_ptr<log::Logger> m_logger;
 
     bool m_cancelled;
 };

@@ -1,10 +1,10 @@
-#include "trogondb/logging/level.h"
+#include "trogondb/log/level.h"
 
 #include <fmt/format.h>
 #include <spdlog/spdlog.h>
 
 namespace trogondb {
-namespace logging {
+namespace log {
 
 spdlog::level::level_enum translateLevel(Level level)
 {
@@ -24,7 +24,7 @@ spdlog::level::level_enum translateLevel(Level level)
     case Level::OFF:
         return spdlog::level::off;
     default:
-        throw UnknownLevelException("Unknown logging level");
+        throw UnknownLevelException("Unknown log level");
     }
 }
 
@@ -46,7 +46,7 @@ Level translateLevel(spdlog::level::level_enum level)
     case spdlog::level::level_enum::off:
         return Level::OFF;
     default:
-        throw UnknownLevelException("Unknown logging level");
+        throw UnknownLevelException("Unknown log level");
     }
 }
 
@@ -63,10 +63,10 @@ Level getLevelByName(const std::string &name)
 
     auto iter = levelNames.find(name);
     if (iter == levelNames.end()) {
-        throw UnknownLevelException(fmt::format("Unknown logging level name '{}'", name));
+        throw UnknownLevelException(fmt::format("Unknown log level name '{}'", name));
     }
     return iter->second;
 }
 
-} // namespace logging
+} // namespace log
 } //namespace trogondb

@@ -1,4 +1,4 @@
-#include "trogondb/logging/handler.h"
+#include "trogondb/log/handler.h"
 
 #include <spdlog/spdlog.h>
 #include <spdlog/async.h>
@@ -7,13 +7,11 @@
 #include <spdlog/sinks/stdout_color_sinks.h>
 
 namespace trogondb {
-namespace logging {
+namespace log {
 
 Handler::Handler(const std::shared_ptr<HandlerImpl> &impl)
     : m_impl(impl)
-{
-    // ...
-}
+{}
 
 void Handler::setLevel(Level level)
 {
@@ -35,5 +33,5 @@ void Handler::flush()
     m_impl->flush();
 }
 
-} // namespace logging
+} // namespace log
 } // namespace trogondb

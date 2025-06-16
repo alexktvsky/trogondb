@@ -2,15 +2,15 @@
 
 #include <cstddef>
 
-#include "trogondb/logging/handler.h"
+#include "trogondb/log/handler.h"
 
 namespace trogondb {
-namespace logging {
+namespace log {
 
 class RotatingFileHandler : public Handler {
 public:
     RotatingFileHandler(const std::string &fileName, size_t maxFileSize, size_t maxFiles, bool rotateOnOpen = false);
 };
 
-} // namespace logging
+} // namespace log
 } // namespace trogondb

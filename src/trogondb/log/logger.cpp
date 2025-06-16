@@ -1,4 +1,4 @@
-#include "trogondb/logging/logger.h"
+#include "trogondb/log/logger.h"
 
 #include <spdlog/spdlog.h>
 #include <spdlog/async.h>
@@ -7,13 +7,11 @@
 #include <spdlog/sinks/stdout_color_sinks.h>
 
 namespace trogondb {
-namespace logging {
+namespace log {
 
 Logger::Logger(const std::list<std::shared_ptr<Handler>> &handlers)
     : Logger(handlers, "")
-{
-    // ...
-}
+{}
 
 Logger::Logger(const std::list<std::shared_ptr<Handler>> &handlers, const std::string &name)
 {
@@ -57,5 +55,5 @@ std::string Logger::getName() const
     return m_impl->name();
 }
 
-} // namespace logging
+} // namespace log
 } // namespace trogondb

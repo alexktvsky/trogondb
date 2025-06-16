@@ -83,7 +83,7 @@ int main(int argc, char **argv)
         return 1;
     }
     catch (...) {
-        // TODO: Add error logging
+        // TODO: Add error log
         throw;
     }
 

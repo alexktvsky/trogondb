@@ -6,9 +6,7 @@ namespace cmd {
 GetCommand::GetCommand(const std::shared_ptr<KeyValueStore> &store, const std::string &key)
     : m_key(key)
     , m_store(store)
-{
-    // ...
-}
+{}
 
 std::string GetCommand::execute()
 {

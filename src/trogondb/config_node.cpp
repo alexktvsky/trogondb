@@ -16,9 +16,7 @@ Node::Node(const YAML::Node &node,
     , m_fileName(fileName)
     , m_fileBuffer(fileBuffer)
     , m_usedNodes(usedNodes)
-{
-    // ...
-}
+{}
 
 Node Node::createRootNode(const std::string &fileName)
 {

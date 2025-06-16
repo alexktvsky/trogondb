@@ -5,15 +5,15 @@
 #include <memory>
 #include <fmt/format.h>
 
-#include "trogondb/logging/handler.h"
-#include "trogondb/logging/level.h"
+#include "trogondb/log/handler.h"
+#include "trogondb/log/level.h"
 
 namespace spdlog {
 class async_logger;
 } // namespace spdlog
 
 namespace trogondb {
-namespace logging {
+namespace log {
 
 constexpr std::size_t LOG_QUEUE_SIZE = 8192;
 constexpr std::size_t LOG_THREAD_COUNT = 1;
@@ -96,5 +96,5 @@ void Logger::critical(const std::string &fmt, T &&...args)
     log(Level::CRITICAL, fmt, std::forward<T>(args)...);
 }
 
-} // namespace logging
+} // namespace log
 } // namespace trogondb

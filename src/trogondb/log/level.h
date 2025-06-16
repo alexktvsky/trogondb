@@ -15,7 +15,7 @@ enum level_enum : int;
 } // namespace spdlog
 
 namespace trogondb {
-namespace logging {
+namespace log {
 
 enum class Level : uint8_t {
     TRACE,
@@ -36,5 +36,5 @@ public:
     using Exception::Exception;
 };
 
-} // namespace logging
+} // namespace log
 } //namespace trogondb

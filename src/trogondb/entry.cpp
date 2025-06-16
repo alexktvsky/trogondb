@@ -5,23 +5,17 @@ namespace trogondb {
 Entry::Entry(const std::string &value, const std::optional<std::chrono::steady_clock::time_point> &expiry)
     : m_value(value)
     , m_expiry(expiry)
-{
-    // ...
-}
+{}
 
 Entry::Entry(const Entry &other)
     : m_value(other.m_value)
     , m_expiry(other.m_expiry)
-{
-    // ...
-}
+{}
 
 Entry::Entry(Entry &&other) noexcept
     : m_value(std::move(other.m_value))
     , m_expiry(std::move(other.m_expiry))
-{
-    // ...
-}
+{}
 
 Entry &Entry::operator=(const Entry &other)
 {

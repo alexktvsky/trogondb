@@ -5,9 +5,7 @@ namespace cmd {
 
 EchoCommand::EchoCommand(const std::string &msg)
     : m_msg(msg)
-{
-    // ...
-}
+{}
 
 std::string EchoCommand::execute()
 {

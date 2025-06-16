@@ -4,9 +4,9 @@
 #include <thread>
 
 #include "trogondb/os/process.h"
-#include "trogondb/logging/file_handler.h"
-#include "trogondb/logging/stream_handler.h"
-#include "trogondb/logging/rotating_file_handler.h"
+#include "trogondb/log/file_handler.h"
+#include "trogondb/log/stream_handler.h"
+#include "trogondb/log/rotating_file_handler.h"
 
 namespace trogondb {
 
@@ -18,34 +18,32 @@ Server::Server(std::shared_ptr<Config> &&config)
     , m_logger(createLogger(m_config))
     , m_store(std::make_shared<KeyValueStore>())
     , m_io(std::make_shared<boost::asio::io_context>())
-{
-    // ...
-}
+{}
 
-std::shared_ptr<logging::Logger> Server::createLogger(const std::shared_ptr<Config> &config)
+std::shared_ptr<log::Logger> Server::createLogger(const std::shared_ptr<Config> &config)
 {
-    std::list<std::shared_ptr<logging::Handler>> handlers;
-    std::shared_ptr<logging::Handler> handler;
+    std::list<std::shared_ptr<log::Handler>> handlers;
+    std::shared_ptr<log::Handler> handler;
 
     for (const auto &log : config->logs) {
         if (log.target == "stdout") {
-            handler = std::make_shared<logging::StreamHandler>(stdout);
+            handler = std::make_shared<log::StreamHandler>(stdout);
         }
         else if (log.target == "stderr") {
-            handler = std::make_shared<logging::StreamHandler>(stderr);
+            handler = std::make_shared<log::StreamHandler>(stderr);
         }
         else if (log.limit != 0) {
-            handler = std::make_shared<logging::RotatingFileHandler>(log.target, log.limit, log.rotate);
+            handler = std::make_shared<log::RotatingFileHandler>(log.target, log.limit, log.rotate);
         }
         else {
-            handler = std::make_shared<logging::FileHandler>(log.target);
+            handler = std::make_shared<log::FileHandler>(log.target);
         }
 
-        handler->setLevel(logging::getLevelByName(log.level));
+        handler->setLevel(log::getLevelByName(log.level));
         handlers.push_back(handler);
     }
 
-    return std::make_shared<logging::Logger>(handlers);
+    return std::make_shared<log::Logger>(handlers);
 }
 
 void Server::initializeProcess(const std::shared_ptr<Config> &config)
@@ -88,12 +86,12 @@ void Server::start()
 
 void Server::stop()
 {
-    // ...
+    // TODO
 }
 
 void Server::restart()
 {
-    // ...
+    // TODO
 }
 
 void Server::doAccept()
