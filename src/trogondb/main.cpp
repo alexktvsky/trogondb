@@ -1,6 +1,6 @@
-#include <cstdio>
 #include <memory>
 #include <vector>
+#include <fmt/base.h>
 
 #include "trogondb/command_line_parser.h"
 #include "trogondb/config_parser.h"
@@ -12,18 +12,18 @@ const std::string DEFAULT_CONFIG_FILENAME = "/etc/trogondb/trogondb.yml";
 
 void printVersionInfo()
 {
-    std::printf("%s %s %s\n", PROJECT_NAME, PROJECT_VERSION, PROJECT_BUILD_DATE);
-    std::printf("Target system: %s %s\n", SYSTEM_NAME, ARCH_NAME);
+    fmt::print("{} {} {}\n", PROJECT_NAME, PROJECT_VERSION, PROJECT_BUILD_DATE);
+    fmt::print("Target system: {} {}\n", SYSTEM_NAME, ARCH_NAME);
 #ifdef COMPILER_NAME_VERSIONED
-    std::printf("Built by %s\n", COMPILER_NAME_VERSIONED);
+    fmt::print("Built by {}\n", COMPILER_NAME_VERSIONED);
 #endif
 }
 
 void printHelpInfo()
 {
-    std::printf(
-        "Usage: %s [options...] [argments...]\n"
-        "%s %s %s\n\n"
+    fmt::print(
+        "Usage: {} [options...] [argments...]\n"
+        "{} {} {}\n\n"
         "Options:\n"
         "  -h, --help                     Displays this message.\n"
         "  -v, --version                  Displays version information.\n"
