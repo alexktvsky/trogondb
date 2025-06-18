@@ -36,51 +36,48 @@ public:
     void cancel();
 
 private:
-    void startTimeout();
+//     void startTimeout();
 
-    void onTimeout(const boost::system::error_code &err);
+//     void onTimeout(const boost::system::error_code &err);
 
-    void doReadLine();
+//     void doReadLine();
 
-    void onReadLine(const boost::system::error_code &err, size_t /*unused*/);
+//     void onReadLine(const boost::system::error_code &err, size_t /*unused*/);
 
-    void doReadBody();
+//     void doReadBody();
 
-    void onReadBody(const boost::system::error_code &err, size_t /*unused*/);
+//     void onReadBody(const boost::system::error_code &err, size_t /*unused*/);
 
-    std::optional<std::unique_ptr<cmd::ICommand>> createCommand(const std::string &cmd, const std::vector<std::string> &args);
+//     std::optional<std::unique_ptr<cmd::ICommand>> createCommand(const std::string &cmd, const std::vector<std::string> &args);
 
-    void executeCommand();
+//     void executeCommand();
 
-    void doWrite();
+//     void doWrite();
 
-    void onWrite(const boost::system::error_code &err, size_t n);
+//     void onWrite(const boost::system::error_code &err, size_t n);
 
-private:
-    boost::asio::ip::tcp::socket m_socket;
-    SessionState m_state;
+// private:
+//     boost::asio::ip::tcp::socket m_socket;
+//     SessionState m_state;
 
-    boost::asio::streambuf m_readBuffer;
-    std::string m_writeBuffer;
-    size_t m_writeOffset;
+//     boost::asio::streambuf m_readBuffer;
+//     std::string m_writeBuffer;
+//     size_t m_writeOffset;
 
-    int m_expectedArgsCount;
-    int m_argsRead;
-    int m_expectedBulkLength;
-    std::vector<std::string> m_parsedArgs;
+//     int m_expectedArgsCount;
+//     int m_argsRead;
+//     int m_expectedBulkLength;
+//     std::vector<std::string> m_parsedArgs;
 
-    static constexpr int TIMEOUT_SECONDS = 10;
-    boost::asio::steady_timer m_timer;
+//     static constexpr int TIMEOUT_SECONDS = 10;
+//     boost::asio::steady_timer m_timer;
 
-    std::shared_ptr<KeyValueStore> m_store;
-    std::shared_ptr<log::Logger> m_logger;
+//     std::shared_ptr<KeyValueStore> m_store;
+//     std::shared_ptr<log::Logger> m_logger;
 
-    bool m_cancelled;
+//     bool m_cancelled;
 };
 
-class UnknowCommandException : public Exception {
-public:
-    using Exception::Exception;
-};
+
 
 } // namespace trogondb

@@ -17,7 +17,7 @@ Server::Server(std::shared_ptr<Config> &&config)
     : m_config(std::move(config))
     , m_logger(createLogger(m_config))
     , m_store(std::make_shared<KeyValueStore>())
-    , m_io(std::make_shared<boost::asio::io_context>())
+    , m_proactor(std::make_shared<Proactor>())
 {}
 
 std::shared_ptr<log::Logger> Server::createLogger(const std::shared_ptr<Config> &config)
@@ -73,15 +73,13 @@ void Server::initialize()
 {
     initializeProcess(m_config);
 
-    m_acceptor = std::make_shared<boost::asio::ip::tcp::acceptor>(*m_io, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), m_config->port));
+    // m_acceptor = std::make_shared<boost::asio::ip::tcp::acceptor>(*m_io, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), m_config->port));
 }
 
 void Server::start()
 {
     initialize();
     m_logger->info("Starting server with pid {}", os::Process::getPid());
-    doAccept();
-    m_io->run();
 }
 
 void Server::stop()
@@ -94,30 +92,30 @@ void Server::restart()
     // TODO
 }
 
-void Server::doAccept()
-{
-    m_acceptor->async_accept(std::bind(&Server::onAccept, this, std::placeholders::_1, std::placeholders::_2));
-}
+// void Server::doAccept()
+// {
+//     m_acceptor->async_accept(std::bind(&Server::onAccept, this, std::placeholders::_1, std::placeholders::_2));
+// }
 
-void Server::onAccept(const boost::system::error_code &err, boost::asio::ip::tcp::socket socket)
-{
-    if (!err) {
-        auto session = createSession(std::move(socket));
-        session->start();
-    }
-    else {
-        m_logger->error("Failed to onAccept(): {}", err.message());
-    }
+// void Server::onAccept(const boost::system::error_code &err, boost::asio::ip::tcp::socket socket)
+// {
+//     if (!err) {
+//         auto session = createSession(std::move(socket));
+//         session->start();
+//     }
+//     else {
+//         m_logger->error("Failed to onAccept(): {}", err.message());
+//     }
 
-    doAccept();
-}
+//     doAccept();
+// }
 
-std::shared_ptr<Session> Server::createSession(boost::asio::ip::tcp::socket socket)
-{
-    auto session = std::make_shared<Session>(std::move(socket), m_store, m_logger);
-    m_sessions.push_back(session);
-    return session;
-}
+// std::shared_ptr<Session> Server::createSession(boost::asio::ip::tcp::socket socket)
+// {
+//     auto session = std::make_shared<Session>(std::move(socket), m_store, m_logger);
+//     m_sessions.push_back(session);
+//     return session;
+// }
 
 void Server::removeSession(const std::shared_ptr<Session> &session)
 {
