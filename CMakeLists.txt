@@ -33,6 +33,7 @@ PRIVATE
     src/trogondb/config_node.cpp
     src/trogondb/config_parser.cpp
     src/trogondb/proactor.cpp
+    src/trogondb/accepter.cpp
     src/trogondb/server.cpp
     src/trogondb/session.cpp
     src/trogondb/entry.cpp
