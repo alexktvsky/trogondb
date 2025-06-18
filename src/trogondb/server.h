@@ -13,8 +13,8 @@ namespace trogondb {
 
 class Server {
 public:
-    Server(const std::shared_ptr<Config> &config);
-    Server(std::shared_ptr<Config> &&config);
+    Server(std::shared_ptr<Proactor> proactor, const std::shared_ptr<Config> &config);
+    Server(std::shared_ptr<Proactor> proactor, std::shared_ptr<Config> &&config);
     void start();
     void stop();
     void restart();
@@ -30,11 +30,11 @@ private:
 private:
     std::shared_ptr<Config> m_config;
     std::shared_ptr<log::Logger> m_logger;
-
-    std::shared_ptr<KeyValueStore> m_store;
+    std::shared_ptr<Proactor> m_proactor;
     std::list<std::shared_ptr<Session>> m_sessions;
 
-    std::shared_ptr<Proactor> m_proactor;
+    std::shared_ptr<KeyValueStore> m_store;
+
 
 
 

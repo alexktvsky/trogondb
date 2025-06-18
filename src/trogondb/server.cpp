@@ -10,14 +10,15 @@
 
 namespace trogondb {
 
-Server::Server(const std::shared_ptr<Config> &config)
-    : Server(std::make_shared<Config>(*config)) {}
+Server::Server(std::shared_ptr<Proactor> proactor, const std::shared_ptr<Config> &config)
+    : Server(proactor, std::make_shared<Config>(*config)) {}
 
-Server::Server(std::shared_ptr<Config> &&config)
+Server::Server(std::shared_ptr<Proactor> proactor, std::shared_ptr<Config> &&config)
     : m_config(std::move(config))
     , m_logger(createLogger(m_config))
-    , m_store(std::make_shared<KeyValueStore>())
     , m_proactor(std::make_shared<Proactor>())
+    , m_sessions()
+    , m_store(std::make_shared<KeyValueStore>())
 {}
 
 std::shared_ptr<log::Logger> Server::createLogger(const std::shared_ptr<Config> &config)
@@ -80,6 +81,8 @@ void Server::start()
 {
     initialize();
     m_logger->info("Starting server with pid {}", os::Process::getPid());
+
+    m_proactor->run();
 }
 
 void Server::stop()

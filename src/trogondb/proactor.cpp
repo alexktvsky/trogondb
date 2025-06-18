@@ -4,17 +4,17 @@ namespace trogondb {
 
 void Proactor::run()
 {
-    m_context.run();
+    m_executionContext.run();
 }
 
 void Proactor::stop()
 {
-    m_context.stop();
+    m_executionContext.stop();
 }
 
 bool Proactor::isRunning()
 {
-    !m_context.stopped();
+    return !m_executionContext.stopped();
 }
 
 } // namespace trogondb

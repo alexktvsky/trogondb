@@ -4,6 +4,7 @@
 
 #include "trogondb/command_line_parser.h"
 #include "trogondb/config_parser.h"
+#include "trogondb/proactor.h"
 #include "trogondb/server.h"
 #include "trogondb/platform_defines.h"
 #include "trogondb/release.h"
@@ -69,7 +70,9 @@ int main(int argc, char **argv)
 
         auto config = trogondb::ConfigParser::parseFile(configFilename);
 
-        trogondb::Server server(std::move(config));
+        auto proactor = std::make_shared<trogondb::Proactor>();
+
+        trogondb::Server server(proactor, std::move(config));
 
         server.start();
     }

@@ -10,7 +10,7 @@ public:
     void stop();
     bool isRunning();
 private:
-    boost::asio::io_context m_context;
+    boost::asio::io_context m_executionContext;
 };
 
 } // namespace trogondb
