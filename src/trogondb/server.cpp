@@ -17,6 +17,7 @@ Server::Server(std::shared_ptr<Proactor> proactor, std::shared_ptr<Config> &&con
     : m_config(std::move(config))
     , m_logger(createLogger(m_config))
     , m_proactor(std::make_shared<Proactor>())
+    , m_accepter(std::make_shared<Acceptor>(m_proactor))
     , m_sessions()
     , m_store(std::make_shared<KeyValueStore>())
 {}
@@ -74,7 +75,9 @@ void Server::initialize()
 {
     initializeProcess(m_config);
 
-    // m_acceptor = std::make_shared<boost::asio::ip::tcp::acceptor>(*m_io, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), m_config->port));
+    m_accepter->addListener(m_config->port);
+    m_accepter->run();
+    m_accepter->setNonBlocking(true);
 }
 
 void Server::start()
@@ -88,6 +91,7 @@ void Server::start()
 void Server::stop()
 {
     // TODO
+    m_proactor->stop();
 }
 
 void Server::restart()
@@ -113,12 +117,12 @@ void Server::restart()
 //     doAccept();
 // }
 
-// std::shared_ptr<Session> Server::createSession(boost::asio::ip::tcp::socket socket)
-// {
-//     auto session = std::make_shared<Session>(std::move(socket), m_store, m_logger);
-//     m_sessions.push_back(session);
-//     return session;
-// }
+std::shared_ptr<Session> Server::createSession(boost::asio::ip::tcp::socket socket)
+{
+    auto session = std::make_shared<Session>(std::move(socket), m_store, m_logger);
+    m_sessions.push_back(session);
+    return session;
+}
 
 void Server::removeSession(const std::shared_ptr<Session> &session)
 {

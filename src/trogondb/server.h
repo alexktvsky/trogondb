@@ -7,7 +7,7 @@
 #include "trogondb/log/logger.h"
 #include "trogondb/kv_store.h"
 #include "trogondb/proactor.h"
-#include "trogondb/accepter.h"
+#include "trogondb/acceptor.h"
 #include "trogondb/session.h"
 
 namespace trogondb {
@@ -32,6 +32,7 @@ private:
     std::shared_ptr<Config> m_config;
     std::shared_ptr<log::Logger> m_logger;
     std::shared_ptr<Proactor> m_proactor;
+    std::shared_ptr<Acceptor> m_accepter;
 
     std::list<std::shared_ptr<Session>> m_sessions;
 
