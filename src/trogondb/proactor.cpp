@@ -3,27 +3,27 @@
 namespace trogondb {
 
 Proactor::Proactor()
-    : m_io(std::make_shared<boost::asio::io_context>())
+    : m_context(std::make_shared<boost::asio::io_context>())
 {}
 
 void Proactor::run()
 {
-    m_io->run();
+    m_context->run();
 }
 
 void Proactor::stop()
 {
-    m_io->stop();
+    m_context->stop();
 }
 
 bool Proactor::isRunning() const
 {
-    return !m_io->stopped();
+    return !m_context->stopped();
 }
 
 std::shared_ptr<boost::asio::io_context> Proactor::getImpl()
 {
-    return m_io;
+    return m_context;
 }
 
 } // namespace trogondb

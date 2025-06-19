@@ -22,7 +22,7 @@ public:
 private:
     std::shared_ptr<boost::asio::io_context> getImpl();
 
-    std::shared_ptr<boost::asio::io_context> m_io;
+    std::shared_ptr<boost::asio::io_context> m_context;
 };
 
 } // namespace trogondb

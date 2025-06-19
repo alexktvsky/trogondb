@@ -22,6 +22,36 @@ void Acceptor::addListener(uint16_t port)
 void Acceptor::run()
 {
     m_acceptor->listen();
+    accept();
+}
+
+void Acceptor::stop()
+{
+    m_stopped.store(true);
+}
+
+void Acceptor::accept()
+{
+    m_acceptor->async_accept(
+        std::bind(&Acceptor::onAccept, this, std::placeholders::_1, std::placeholders::_2));
+}
+
+void Acceptor::onAccept(const boost::system::error_code &err, boost::asio::ip::tcp::socket socket)
+{
+    if (!err) {
+        // auto session = createSession(std::move(socket));
+        // session->start();
+    }
+    else {
+        // m_logger->error("Failed to onAccept(): {}", err.message());
+    }
+
+    if (m_stopped.load()) {
+        m_acceptor->close();
+        return;
+    }
+
+    accept();
 }
 
 } // namespace trogondb

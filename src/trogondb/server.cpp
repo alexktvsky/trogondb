@@ -99,24 +99,6 @@ void Server::restart()
     // TODO
 }
 
-// void Server::doAccept()
-// {
-//     m_acceptor->async_accept(std::bind(&Server::onAccept, this, std::placeholders::_1, std::placeholders::_2));
-// }
-
-// void Server::onAccept(const boost::system::error_code &err, boost::asio::ip::tcp::socket socket)
-// {
-//     if (!err) {
-//         auto session = createSession(std::move(socket));
-//         session->start();
-//     }
-//     else {
-//         m_logger->error("Failed to onAccept(): {}", err.message());
-//     }
-
-//     doAccept();
-// }
-
 std::shared_ptr<Session> Server::createSession(boost::asio::ip::tcp::socket socket)
 {
     auto session = std::make_shared<Session>(std::move(socket), m_store, m_logger);
