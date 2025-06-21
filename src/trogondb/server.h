@@ -8,7 +8,8 @@
 #include "trogondb/kv_store.h"
 #include "trogondb/proactor.h"
 #include "trogondb/acceptor.h"
-#include "trogondb/session.h"
+#include "trogondb/connection.h"
+#include "trogondb/connection_manager.h"
 
 namespace trogondb {
 
@@ -25,23 +26,14 @@ private:
     void initializeProcess(const std::shared_ptr<Config> &config);
     void initialize();
 
-    std::shared_ptr<Session> createSession(boost::asio::ip::tcp::socket socket);
-    void removeSession(const std::shared_ptr<Session> &session);
-
 private:
     std::shared_ptr<Config> m_config;
     std::shared_ptr<log::Logger> m_logger;
     std::shared_ptr<Proactor> m_proactor;
+    std::shared_ptr<ConnectionManager> m_connectionManager;
     std::shared_ptr<Acceptor> m_accepter;
 
-    std::list<std::shared_ptr<Session>> m_sessions;
-
     std::shared_ptr<KeyValueStore> m_store;
-
-
-
-
-    // std::shared_ptr<boost::asio::ip::tcp::acceptor> m_acceptor;
 };
 
 } // namespace trogondb

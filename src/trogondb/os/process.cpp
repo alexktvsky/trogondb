@@ -33,7 +33,7 @@ void Process::becomeDaemon()
         exit(0);
     }
 
-    // Become session leader
+    // Become connection leader
     if (setsid() < 0) {
         throw SystemException("Failed to become daemon, setsid() failed");
     }

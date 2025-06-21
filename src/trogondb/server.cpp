@@ -17,8 +17,8 @@ Server::Server(std::shared_ptr<Proactor> proactor, std::shared_ptr<Config> &&con
     : m_config(std::move(config))
     , m_logger(createLogger(m_config))
     , m_proactor(std::make_shared<Proactor>())
+    , m_connectionManager(std::make_shared<ConnectionManager>())
     , m_accepter(std::make_shared<Acceptor>(m_proactor))
-    , m_sessions()
     , m_store(std::make_shared<KeyValueStore>())
 {}
 
@@ -97,19 +97,6 @@ void Server::stop()
 void Server::restart()
 {
     // TODO
-}
-
-std::shared_ptr<Session> Server::createSession(boost::asio::ip::tcp::socket socket)
-{
-    auto session = std::make_shared<Session>(std::move(socket), m_store, m_logger);
-    m_sessions.push_back(session);
-    return session;
-}
-
-void Server::removeSession(const std::shared_ptr<Session> &session)
-{
-    session->cancel();
-    m_sessions.remove(session);
 }
 
 } // namespace trogondb

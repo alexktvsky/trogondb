@@ -35,7 +35,8 @@ PRIVATE
     src/trogondb/proactor.cpp
     src/trogondb/acceptor.cpp
     src/trogondb/server.cpp
-    src/trogondb/session.cpp
+    src/trogondb/connection.cpp
+    src/trogondb/connection_manager.cpp
     src/trogondb/entry.cpp
     src/trogondb/kv_store.cpp
     src/trogondb/exception.cpp

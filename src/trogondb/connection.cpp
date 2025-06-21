@@ -1,4 +1,4 @@
-#include "trogondb/session.h"
+#include "trogondb/connection.h"
 
 #include <fmt/format.h>
 
@@ -11,11 +11,10 @@
 
 namespace trogondb {
 
-Session::Session(boost::asio::ip::tcp::socket socket,
-                 const std::shared_ptr<KeyValueStore> &store,
-                 const std::shared_ptr<log::Logger> &logger)
+Connection::Connection(boost::asio::ip::tcp::socket socket,
+                       const std::shared_ptr<log::Logger> &logger)
     // : m_socket(std::move(socket))
-    // , m_state(SessionState::WAITING_FOR_ARRAY_HEADER)
+    // , m_state(ConnectionState::WAITING_FOR_ARRAY_HEADER)
     // , m_writeOffset(0)
     // , m_expectedArgsCount(0)
     // , m_argsRead(0)
@@ -26,19 +25,19 @@ Session::Session(boost::asio::ip::tcp::socket socket,
     // , m_cancelled(false)
 {}
 
-void Session::start()
+void Connection::start()
 {
     // m_logger->info("New client connected {}", m_socket.remote_endpoint().address().to_string());
     // doReadLine();
 }
 
-// void Session::startTimeout()
+// void Connection::startTimeout()
 // {
     // m_timer.expires_after(std::chrono::seconds(TIMEOUT_SECONDS));
-    // m_timer.async_wait(std::bind(&Session::onTimeout, shared_from_this(), std::placeholders::_1));
+    // m_timer.async_wait(std::bind(&Connection::onTimeout, shared_from_this(), std::placeholders::_1));
 // }
 
-// void Session::onTimeout(const boost::system::error_code &err)
+// void Connection::onTimeout(const boost::system::error_code &err)
 // {
 //     if (err) {
 //         m_logger->error("Failed to onTimeout(): {}", err.message());
@@ -48,18 +47,18 @@ void Session::start()
 //     cancel();
 // }
 
-// void Session::doReadLine()
+// void Connection::doReadLine()
 // {
 //     boost::asio::async_read_until(
 //         m_socket,
 //         m_readBuffer,
 //         "\r\n",
-//         std::bind(&Session::onReadLine, shared_from_this(), std::placeholders::_1, std::placeholders::_2));
+//         std::bind(&Connection::onReadLine, shared_from_this(), std::placeholders::_1, std::placeholders::_2));
 
 //     startTimeout();
 // }
 
-// void Session::onReadLine(const boost::system::error_code &err, size_t /*unused*/)
+// void Connection::onReadLine(const boost::system::error_code &err, size_t /*unused*/)
 // {
 //     if (err) {
 //         if (err == boost::asio::error::eof) {
@@ -91,7 +90,7 @@ void Session::start()
 //     }
 
 //     switch (m_state) {
-//     case SessionState::WAITING_FOR_ARRAY_HEADER:
+//     case ConnectionState::WAITING_FOR_ARRAY_HEADER:
 //         if (line[0] != '*') {
 //             m_logger->error("Failed to onReadLine(): Expected array");
 //             cancel();
@@ -100,16 +99,16 @@ void Session::start()
 //         m_expectedArgsCount = std::stoi(line.substr(1));
 //         m_argsRead = 0;
 //         m_parsedArgs.clear();
-//         m_state = SessionState::WAITING_FOR_BULK_LENGTH;
+//         m_state = ConnectionState::WAITING_FOR_BULK_LENGTH;
 //         break;
-//     case SessionState::WAITING_FOR_BULK_LENGTH:
+//     case ConnectionState::WAITING_FOR_BULK_LENGTH:
 //         if (line[0] != '$') {
 //             m_logger->error("Failed to onReadLine(): Expected bulk length");
 //             cancel();
 //             return;
 //         }
 //         m_expectedBulkLength = std::stoi(line.substr(1));
-//         m_state = SessionState::WAITING_FOR_BULK_BODY;
+//         m_state = ConnectionState::WAITING_FOR_BULK_BODY;
 //         doReadBody();
 //         return;
 //     default:
@@ -121,7 +120,7 @@ void Session::start()
 //     doReadLine();
 // }
 
-// void Session::doReadBody()
+// void Connection::doReadBody()
 // {
 //     size_t needed = m_expectedBulkLength + 2;
 //     if (m_readBuffer.size() >= needed) {
@@ -133,12 +132,12 @@ void Session::start()
 //         m_socket,
 //         m_readBuffer,
 //         boost::asio::transfer_exactly(needed),
-//         std::bind(&Session::onReadBody, shared_from_this(), std::placeholders::_1, std::placeholders::_2));
+//         std::bind(&Connection::onReadBody, shared_from_this(), std::placeholders::_1, std::placeholders::_2));
 
 //     startTimeout();
 // }
 
-// void Session::onReadBody(const boost::system::error_code &err, size_t /*unused*/)
+// void Connection::onReadBody(const boost::system::error_code &err, size_t /*unused*/)
 // {
 //     if (err) {
 //         if (err == boost::asio::error::eof) {
@@ -163,16 +162,16 @@ void Session::start()
 //     ++m_argsRead;
 
 //     if (m_argsRead < m_expectedArgsCount) {
-//         m_state = SessionState::WAITING_FOR_BULK_LENGTH;
+//         m_state = ConnectionState::WAITING_FOR_BULK_LENGTH;
 //         doReadLine();
 //     }
 //     else {
-//         m_state = SessionState::READY_TO_EXECUTE;
+//         m_state = ConnectionState::READY_TO_EXECUTE;
 //         executeCommand();
 //     }
 // }
 
-// std::optional<std::unique_ptr<cmd::ICommand>> Session::createCommand(const std::string &cmd, const std::vector<std::string> &args)
+// std::optional<std::unique_ptr<cmd::ICommand>> Connection::createCommand(const std::string &cmd, const std::vector<std::string> &args)
 // {
 //     if (cmd == "ping") {
 //         return std::make_unique<cmd::PingCommand>();
@@ -190,7 +189,7 @@ void Session::start()
 //     return std::nullopt;
 // }
 
-// void Session::executeCommand()
+// void Connection::executeCommand()
 // {
 //     // TODO: Improve performace
 //     std::string cmd = stringToLower(m_parsedArgs[0]);
@@ -206,21 +205,21 @@ void Session::start()
 //     }
 
 //     m_writeOffset = 0;
-//     m_state = SessionState::WRITING_RESPONSE;
+//     m_state = ConnectionState::WRITING_RESPONSE;
 //     doWrite();
 // }
 
-// void Session::doWrite()
+// void Connection::doWrite()
 // {
 //     auto slice = boost::asio::buffer(m_writeBuffer.data() + m_writeOffset, m_writeBuffer.size() - m_writeOffset);
 
 //     boost::asio::async_write(
 //         m_socket,
 //         slice,
-//         std::bind(&Session::onWrite, shared_from_this(), std::placeholders::_1, std::placeholders::_2));
+//         std::bind(&Connection::onWrite, shared_from_this(), std::placeholders::_1, std::placeholders::_2));
 // }
 
-// void Session::onWrite(const boost::system::error_code &err, size_t n)
+// void Connection::onWrite(const boost::system::error_code &err, size_t n)
 // {
 //     if (err) {
 //         if (err == boost::asio::error::eof) {
@@ -242,20 +241,20 @@ void Session::start()
 //         doWrite();
 //     }
 //     else {
-//         m_state = SessionState::WAITING_FOR_ARRAY_HEADER;
+//         m_state = ConnectionState::WAITING_FOR_ARRAY_HEADER;
 //         doReadLine();
 //     }
 // }
 
-void Session::cancel()
+void Connection::cancel()
 {
     // if (m_cancelled) {
     //     return;
     // }
     // m_timer.cancel();
     // m_socket.cancel();
-    // m_state = SessionState::ERROR;
-    // // m_server->removeSession(shared_from_this());
+    // m_state = ConnectionState::ERROR;
+    // // m_server->removeConnection(shared_from_this());
     // m_cancelled = true;
 }
 

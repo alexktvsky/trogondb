@@ -39,8 +39,8 @@ void Acceptor::accept()
 void Acceptor::onAccept(const boost::system::error_code &err, boost::asio::ip::tcp::socket socket)
 {
     if (!err) {
-        // auto session = createSession(std::move(socket));
-        // session->start();
+        // auto connection = createConnection(std::move(socket));
+        // connection->start();
     }
     else {
         // m_logger->error("Failed to onAccept(): {}", err.message());

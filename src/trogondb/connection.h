@@ -15,7 +15,7 @@
 
 namespace trogondb {
 
-enum class SessionState : uint8_t {
+enum class ConnectionState : uint8_t {
     WAITING_FOR_ARRAY_HEADER,
     WAITING_FOR_BULK_LENGTH,
     WAITING_FOR_BULK_BODY,
@@ -25,11 +25,10 @@ enum class SessionState : uint8_t {
     ERROR
 };
 
-class Session : public std::enable_shared_from_this<Session> {
+class Connection : public std::enable_shared_from_this<Connection> {
 public:
-    Session(boost::asio::ip::tcp::socket socket,
-            const std::shared_ptr<KeyValueStore> &store,
-            const std::shared_ptr<log::Logger> &logger);
+    Connection(boost::asio::ip::tcp::socket socket,
+               const std::shared_ptr<log::Logger> &logger);
 
     void start();
 
@@ -58,7 +57,7 @@ private:
 
 // private:
 //     boost::asio::ip::tcp::socket m_socket;
-//     SessionState m_state;
+//     ConnectionState m_state;
 
 //     boost::asio::streambuf m_readBuffer;
 //     std::string m_writeBuffer;
