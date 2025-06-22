@@ -1,7 +1,7 @@
 #pragma once
 
-#include <list>
 #include <memory>
+#include <list>
 
 #include "trogondb/config.h"
 #include "trogondb/log/logger.h"

@@ -36,6 +36,7 @@ PRIVATE
     src/trogondb/acceptor.cpp
     src/trogondb/server.cpp
     src/trogondb/connection.cpp
+    src/trogondb/connection_state.cpp
     src/trogondb/connection_manager.cpp
     src/trogondb/entry.cpp
     src/trogondb/kv_store.cpp
