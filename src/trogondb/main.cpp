@@ -6,6 +6,7 @@
 #include "trogondb/config_parser.h"
 #include "trogondb/proactor.h"
 #include "trogondb/server.h"
+#include "trogondb/log/log_manager.h"
 #include "trogondb/platform_defines.h"
 #include "trogondb/release.h"
 
@@ -73,6 +74,8 @@ int main(int argc, char **argv)
         auto proactor = std::make_shared<trogondb::Proactor>();
 
         trogondb::Server server(proactor, std::move(config));
+
+        trogondb::log::LogManager::instance().setDefaultLogger(server.getLogger());
 
         server.start();
     }

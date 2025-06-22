@@ -10,7 +10,7 @@ namespace trogondb {
 
 class ConnectionManager {
 public:
-    std::shared_ptr<Connection> createConnection(boost::asio::ip::tcp::socket socket, std::shared_ptr<log::Logger> logger);
+    std::shared_ptr<Connection> createConnection(boost::asio::ip::tcp::socket socket);
     void removeConnection(const std::shared_ptr<Connection> &connection);
 private:
     std::list<std::shared_ptr<Connection>> m_connections;

@@ -1,14 +1,15 @@
 #include "trogondb/acceptor.h"
 
+#include "trogondb/log/log_manager.h"
+
 namespace trogondb {
 
 Acceptor::Acceptor(std::shared_ptr<Proactor> proactor,
-                   std::shared_ptr<ConnectionManager> connectionManager,
-                   std::shared_ptr<log::Logger> logger)
+                   std::shared_ptr<ConnectionManager> connectionManager)
     : m_acceptor(std::make_shared<boost::asio::ip::tcp::acceptor>(*proactor->getImpl()))
     , m_stopped(false)
     , m_connectionManager(connectionManager)
-    , m_logger(logger)
+    , m_logger(log::LogManager::instance().getDefaultLogger())
 {}
 
 void Acceptor::setNonBlocking(bool mode)
@@ -44,7 +45,7 @@ void Acceptor::accept()
 void Acceptor::onAccept(const boost::system::error_code &err, boost::asio::ip::tcp::socket socket)
 {
     if (!err) {
-        auto connection = m_connectionManager->createConnection(std::move(socket), m_logger);
+        auto connection = m_connectionManager->createConnection(std::move(socket));
         connection->start();
     }
     else {

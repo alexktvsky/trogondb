@@ -20,7 +20,7 @@ Server::Server(std::shared_ptr<Proactor> proactor, std::shared_ptr<Config> &&con
     , m_logger(createLogger(m_config))
     , m_proactor(std::make_shared<Proactor>())
     , m_connectionManager(std::make_shared<ConnectionManager>())
-    , m_accepter(std::make_shared<Acceptor>(m_proactor, m_connectionManager, m_logger))
+    , m_accepter(std::make_shared<Acceptor>(m_proactor, m_connectionManager))
     , m_store(std::make_shared<KeyValueStore>())
 {}
 
@@ -82,6 +82,11 @@ void Server::initialize()
     m_accepter->addListener(m_config->port);
     m_accepter->run();
     m_accepter->setNonBlocking(true);
+}
+
+std::shared_ptr<log::Logger> Server::getLogger() const
+{
+    return m_logger;
 }
 
 void Server::start()

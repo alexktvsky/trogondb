@@ -47,6 +47,7 @@ PRIVATE
     src/trogondb/cmd/get_command.cpp
     src/trogondb/cmd/set_command.cpp
     src/trogondb/log/logger.cpp
+    src/trogondb/log/log_manager.cpp
     src/trogondb/log/level.cpp
     src/trogondb/log/handler.cpp
     src/trogondb/log/stream_handler.cpp

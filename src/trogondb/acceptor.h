@@ -14,7 +14,7 @@ namespace trogondb {
 
 class Acceptor {
 public:
-    explicit Acceptor(std::shared_ptr<Proactor> proactor, std::shared_ptr<ConnectionManager> connectionManager, std::shared_ptr<log::Logger> logger);
+    explicit Acceptor(std::shared_ptr<Proactor> proactor, std::shared_ptr<ConnectionManager> connectionManager);
 
     void addListener(uint16_t port);
 

@@ -27,7 +27,7 @@ enum class ConnectionState : uint8_t {
 
 class Connection : public std::enable_shared_from_this<Connection> {
 public:
-    Connection(boost::asio::ip::tcp::socket socket, std::shared_ptr<log::Logger> logger);
+    Connection(boost::asio::ip::tcp::socket socket);
 
     void start();
 

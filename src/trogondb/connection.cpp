@@ -8,12 +8,13 @@
 #include "trogondb/cmd/set_command.h"
 #include "trogondb/exception.h"
 #include "trogondb/utils.h"
+#include "trogondb/log/log_manager.h"
 
 namespace trogondb {
 
-Connection::Connection(boost::asio::ip::tcp::socket socket, std::shared_ptr<log::Logger> logger)
+Connection::Connection(boost::asio::ip::tcp::socket socket)
     : m_socket(std::move(socket))
-    , m_logger(logger)
+    , m_logger(log::LogManager::instance().getDefaultLogger())
 {}
 
 void Connection::start()

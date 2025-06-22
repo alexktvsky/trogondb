@@ -17,6 +17,7 @@ class Server {
 public:
     Server(std::shared_ptr<Proactor> proactor, const std::shared_ptr<Config> &config);
     Server(std::shared_ptr<Proactor> proactor, std::shared_ptr<Config> &&config);
+    std::shared_ptr<log::Logger> getLogger() const;
     void start();
     void stop();
     void restart();

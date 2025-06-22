@@ -2,11 +2,9 @@
 
 namespace trogondb {
 
-std::shared_ptr<Connection> ConnectionManager::createConnection(
-    boost::asio::ip::tcp::socket socket,
-    std::shared_ptr<log::Logger> logger)
+std::shared_ptr<Connection> ConnectionManager::createConnection(boost::asio::ip::tcp::socket socket)
 {
-    auto connection = std::make_shared<Connection>(std::move(socket), logger);
+    auto connection = std::make_shared<Connection>(std::move(socket));
     m_connections.push_back(connection);
     return connection;
 }
