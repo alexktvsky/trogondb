@@ -8,12 +8,13 @@
 
 #include "trogondb/proactor.h"
 #include "trogondb/connection_manager.h"
+#include "trogondb/log/logger.h"
 
 namespace trogondb {
 
 class Acceptor {
 public:
-    explicit Acceptor(std::shared_ptr<Proactor> proactor, std::shared_ptr<ConnectionManager> connectionManager);
+    explicit Acceptor(std::shared_ptr<Proactor> proactor, std::shared_ptr<ConnectionManager> connectionManager, std::shared_ptr<log::Logger> logger);
 
     void addListener(uint16_t port);
 
@@ -31,6 +32,7 @@ private:
     std::shared_ptr<boost::asio::ip::tcp::acceptor> m_acceptor;
     std::atomic<bool> m_stopped;
     std::shared_ptr<ConnectionManager> m_connectionManager;
+    std::shared_ptr<log::Logger> m_logger;
 };
 
 } // namespace trogondb

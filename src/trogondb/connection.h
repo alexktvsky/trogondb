@@ -27,7 +27,7 @@ enum class ConnectionState : uint8_t {
 
 class Connection : public std::enable_shared_from_this<Connection> {
 public:
-    Connection(boost::asio::ip::tcp::socket socket);
+    Connection(boost::asio::ip::tcp::socket socket, std::shared_ptr<log::Logger> logger);
 
     void start();
 
@@ -54,8 +54,10 @@ private:
 
 //     void onWrite(const boost::system::error_code &err, size_t n);
 
-// private:
-//     boost::asio::ip::tcp::socket m_socket;
+private:
+    boost::asio::ip::tcp::socket m_socket;
+    std::shared_ptr<log::Logger> m_logger;
+
 //     ConnectionState m_state;
 
 //     boost::asio::streambuf m_readBuffer;

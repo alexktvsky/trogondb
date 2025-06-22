@@ -11,22 +11,14 @@
 
 namespace trogondb {
 
-Connection::Connection(boost::asio::ip::tcp::socket socket)
-    // : m_socket(std::move(socket))
-    // , m_state(ConnectionState::WAITING_FOR_ARRAY_HEADER)
-    // , m_writeOffset(0)
-    // , m_expectedArgsCount(0)
-    // , m_argsRead(0)
-    // , m_expectedBulkLength(0)
-    // , m_timer(m_socket.get_executor())
-    // , m_store(store)
-    // , m_logger(logger)
-    // , m_cancelled(false)
+Connection::Connection(boost::asio::ip::tcp::socket socket, std::shared_ptr<log::Logger> logger)
+    : m_socket(std::move(socket))
+    , m_logger(logger)
 {}
 
 void Connection::start()
 {
-    // m_logger->info("New client connected {}", m_socket.remote_endpoint().address().to_string());
+    m_logger->info("Started new connection {}", m_socket.remote_endpoint().address().to_string());
     // doReadLine();
 }
 

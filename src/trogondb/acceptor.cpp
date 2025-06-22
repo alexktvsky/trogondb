@@ -2,10 +2,13 @@
 
 namespace trogondb {
 
-Acceptor::Acceptor(std::shared_ptr<Proactor> proactor, std::shared_ptr<ConnectionManager> connectionManager)
+Acceptor::Acceptor(std::shared_ptr<Proactor> proactor,
+                   std::shared_ptr<ConnectionManager> connectionManager,
+                   std::shared_ptr<log::Logger> logger)
     : m_acceptor(std::make_shared<boost::asio::ip::tcp::acceptor>(*proactor->getImpl()))
     , m_stopped(false)
     , m_connectionManager(connectionManager)
+    , m_logger(logger)
 {}
 
 void Acceptor::setNonBlocking(bool mode)
@@ -41,11 +44,11 @@ void Acceptor::accept()
 void Acceptor::onAccept(const boost::system::error_code &err, boost::asio::ip::tcp::socket socket)
 {
     if (!err) {
-        auto connection = m_connectionManager->createConnection(std::move(socket));
+        auto connection = m_connectionManager->createConnection(std::move(socket), m_logger);
         connection->start();
     }
     else {
-        // m_logger->error("Failed to onAccept(): {}", err.message());
+        m_logger->error("Failed to accept a new connection: {}", err.message());
     }
 
     if (m_stopped.load()) {
