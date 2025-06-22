@@ -9,30 +9,27 @@
 namespace trogondb {
 namespace log {
 
-Logger::Logger(const std::list<std::shared_ptr<Handler>> &handlers)
-    : Logger(handlers, "")
-{}
-
-Logger::Logger(const std::list<std::shared_ptr<Handler>> &handlers, const std::string &name)
+Logger::Logger(const std::string &name, const std::vector<std::shared_ptr<Handler>> &handlers)
 {
-    // Queue with 8k items and 1 backing thread
     spdlog::init_thread_pool(LOG_QUEUE_SIZE, LOG_THREAD_COUNT);
 
     auto threadPool = spdlog::thread_pool();
     auto overflowPolicy = spdlog::async_overflow_policy::block;
 
-    std::list<std::shared_ptr<HandlerImpl>> sinks;
+    std::vector<std::shared_ptr<HandlerImpl>> sinks;
 
     for (const auto &handler : handlers) {
         sinks.push_back(handler->m_impl);
     }
 
-    m_impl = std::make_shared<spdlog::async_logger>(name, sinks.begin(), sinks.end(), threadPool, overflowPolicy);
-
-    // Flush all messages
-    m_impl->flush_on(translateLevel(Level::TRACE));
+    m_impl = std::make_shared<LoggerImpl>(name, sinks.begin(), sinks.end(), threadPool, overflowPolicy);
 
     spdlog::register_logger(m_impl);
+}
+
+std::string Logger::getName() const
+{
+    return m_impl->name();
 }
 
 void Logger::log(Level level, const std::string &msg)
@@ -40,19 +37,14 @@ void Logger::log(Level level, const std::string &msg)
     m_impl->log(translateLevel(level), msg);
 }
 
-void Logger::addHandler(const std::shared_ptr<Handler> &handler)
+void Logger::setFlushLevel(Level level)
 {
-    m_handlers.push_back(handler);
+    m_impl->flush_on(translateLevel(level));
 }
 
 void Logger::flush()
 {
     m_impl->flush();
-}
-
-std::string Logger::getName() const
-{
-    return m_impl->name();
 }
 
 } // namespace log

@@ -2,6 +2,7 @@
 
 #include <chrono>
 #include <thread>
+#include <vector>
 
 #include "trogondb/os/process.h"
 #include "trogondb/log/file_handler.h"
@@ -11,23 +12,25 @@
 namespace trogondb {
 
 Server::Server(std::shared_ptr<Proactor> proactor, const std::shared_ptr<Config> &config)
-    : Server(proactor, std::make_shared<Config>(*config)) {}
+    : Server(proactor, std::make_shared<Config>(*config))
+{}
 
 Server::Server(std::shared_ptr<Proactor> proactor, std::shared_ptr<Config> &&config)
     : m_config(std::move(config))
     , m_logger(createLogger(m_config))
     , m_proactor(std::make_shared<Proactor>())
     , m_connectionManager(std::make_shared<ConnectionManager>())
-    , m_accepter(std::make_shared<Acceptor>(m_proactor))
+    , m_accepter(std::make_shared<Acceptor>(m_proactor, m_connectionManager))
     , m_store(std::make_shared<KeyValueStore>())
 {}
 
 std::shared_ptr<log::Logger> Server::createLogger(const std::shared_ptr<Config> &config)
 {
-    std::list<std::shared_ptr<log::Handler>> handlers;
-    std::shared_ptr<log::Handler> handler;
+    std::vector<std::shared_ptr<log::Handler>> handlers;
 
     for (const auto &log : config->logs) {
+        std::shared_ptr<log::Handler> handler;
+
         if (log.target == "stdout") {
             handler = std::make_shared<log::StreamHandler>(stdout);
         }
@@ -42,10 +45,11 @@ std::shared_ptr<log::Logger> Server::createLogger(const std::shared_ptr<Config> 
         }
 
         handler->setLevel(log::getLevelByName(log.level));
+
         handlers.push_back(handler);
     }
 
-    return std::make_shared<log::Logger>(handlers);
+    return std::make_shared<log::Logger>("server", handlers);
 }
 
 void Server::initializeProcess(const std::shared_ptr<Config> &config)

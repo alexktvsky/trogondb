@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string>
-#include <list>
+#include <vector>
 #include <memory>
 #include <fmt/format.h>
 
@@ -20,8 +20,9 @@ constexpr std::size_t LOG_THREAD_COUNT = 1;
 
 class Logger {
 public:
-    Logger(const std::list<std::shared_ptr<Handler>> &handlers);
-    Logger(const std::list<std::shared_ptr<Handler>> &m_handlers, const std::string &name);
+    Logger(const std::string &name, const std::vector<std::shared_ptr<Handler>> &handlers);
+
+    std::string getName() const;
 
     template <typename... T>
     void log(Level level, const std::string &fmt, T &&...args);
@@ -45,13 +46,14 @@ public:
     void critical(const std::string &fmt, T &&...args);
 
     void log(Level level, const std::string &msg);
-    void addHandler(const std::shared_ptr<Handler> &handler);
+
+    void setFlushLevel(Level level);
+
     void flush();
-    std::string getName() const;
+
 private:
     using LoggerImpl = spdlog::async_logger;
     std::shared_ptr<LoggerImpl> m_impl;
-    std::list<std::shared_ptr<Handler>> m_handlers;
 };
 
 template <typename... T>

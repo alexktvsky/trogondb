@@ -26,7 +26,6 @@ private:
     void initializeProcess(const std::shared_ptr<Config> &config);
     void initialize();
 
-private:
     std::shared_ptr<Config> m_config;
     std::shared_ptr<log::Logger> m_logger;
     std::shared_ptr<Proactor> m_proactor;

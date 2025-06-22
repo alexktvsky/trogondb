@@ -7,12 +7,13 @@
 #include <boost/asio.hpp>
 
 #include "trogondb/proactor.h"
+#include "trogondb/connection_manager.h"
 
 namespace trogondb {
 
 class Acceptor {
 public:
-    explicit Acceptor(std::shared_ptr<Proactor> proactor);
+    explicit Acceptor(std::shared_ptr<Proactor> proactor, std::shared_ptr<ConnectionManager> connectionManager);
 
     void addListener(uint16_t port);
 
@@ -28,8 +29,8 @@ private:
     void onAccept(const boost::system::error_code &err, boost::asio::ip::tcp::socket socket);
 
     std::shared_ptr<boost::asio::ip::tcp::acceptor> m_acceptor;
-
     std::atomic<bool> m_stopped;
+    std::shared_ptr<ConnectionManager> m_connectionManager;
 };
 
 } // namespace trogondb

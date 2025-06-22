@@ -1,3 +1,5 @@
+#pragma once
+
 #include <memory>
 #include <list>
 
@@ -7,7 +9,6 @@ namespace trogondb {
 
 class ConnectionManager {
 public:
-    explicit ConnectionManager();
     std::shared_ptr<Connection> createConnection(boost::asio::ip::tcp::socket socket);
     void removeConnection(const std::shared_ptr<Connection> &connection);
 private:

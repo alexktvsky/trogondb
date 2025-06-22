@@ -11,8 +11,7 @@
 
 namespace trogondb {
 
-Connection::Connection(boost::asio::ip::tcp::socket socket,
-                       const std::shared_ptr<log::Logger> &logger)
+Connection::Connection(boost::asio::ip::tcp::socket socket)
     // : m_socket(std::move(socket))
     // , m_state(ConnectionState::WAITING_FOR_ARRAY_HEADER)
     // , m_writeOffset(0)
