@@ -27,8 +27,6 @@ void ReadingHeaderState::doRead(std::shared_ptr<boost::asio::streambuf> buffer, 
     std::string data(boost::asio::buffers_begin(buffer->data()),
                      boost::asio::buffers_begin(buffer->data()) + bytesTransferred);
 
-    // m_logger->debug("ReadingHeaderState::doRead() data: {}", data);
-
     size_t pos = data.find("\r\n");
     if (pos == std::string::npos) {
         return;
@@ -45,7 +43,7 @@ void ReadingHeaderState::doRead(std::shared_ptr<boost::asio::streambuf> buffer, 
 
     size_t elementsCount = std::stoi(data.substr(1, pos));
 
-    m_logger->debug("ReadingHeaderState::doRead() elementsCount: {}", elementsCount);
+    m_logger->debug("ReadingHeaderState::doRead() count: {}", elementsCount);
 
     buffer->consume(bytesConsumed);
 
@@ -63,8 +61,6 @@ void ReadingArgumentLengthState::doRead(std::shared_ptr<boost::asio::streambuf> 
     std::string data(boost::asio::buffers_begin(buffer->data()),
                      boost::asio::buffers_begin(buffer->data()) + bytesTransferred);
 
-    // m_logger->debug("ReadingArgumentLengthState::doRead() data: {}", data);
-
     size_t pos = data.find("\r\n");
     if (pos == std::string::npos) {
         return;
@@ -81,7 +77,7 @@ void ReadingArgumentLengthState::doRead(std::shared_ptr<boost::asio::streambuf> 
 
     size_t bulkLen = std::stoi(data.substr(1, pos));
 
-    m_logger->debug("ArgumentLengthStateState::doRead() bulkLen: {}", bulkLen);
+    m_logger->debug("ArgumentLengthStateState::doRead() argLen: {}", bulkLen);
 
     buffer->consume(bytesConsumed);
 
@@ -98,8 +94,6 @@ void ReadingArgumentState::doRead(std::shared_ptr<boost::asio::streambuf> buffer
 
     std::string data(boost::asio::buffers_begin(buffer->data()),
                      boost::asio::buffers_begin(buffer->data()) + bytesTransferred);
-
-    // m_logger->debug("ReadingArgumentState::doRead() data: {}", data);
 
     size_t pos = data.find("\r\n");
     if (pos == std::string::npos) {
@@ -120,7 +114,7 @@ void ReadingArgumentState::doRead(std::shared_ptr<boost::asio::streambuf> buffer
         m_connection->m_state->doRead(buffer, bytesTransferred - bytesConsumed);
     }
 
-
+    // execute command
 }
 
 } // namespace trogondb

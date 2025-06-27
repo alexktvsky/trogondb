@@ -72,6 +72,8 @@ void Connection::onReadDone(const boost::system::error_code &err, size_t bytesTr
     }
 
     m_state->doRead(m_readBuffer, bytesTransferred);
+
+    doRead();
 }
 
 

@@ -55,7 +55,7 @@ std::shared_ptr<log::Logger> Server::createLogger(const std::shared_ptr<Config> 
         handlers.push_back(handler);
     }
 
-    auto logger = std::make_shared<log::Logger>("server", handlers);
+    auto logger = std::make_shared<log::Logger>("", handlers);
     logger->setLevel(minLevel);
 
     return logger;
