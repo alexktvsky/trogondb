@@ -27,6 +27,10 @@ protected:
     std::shared_ptr<log::Logger> m_logger;
 };
 
+class ErrorState : public IConnectionState {
+public:
+    using IConnectionState::IConnectionState;
+};
 
 class ReadingHeaderState : public IConnectionState {
 public:
@@ -35,16 +39,22 @@ public:
     void doRead(std::shared_ptr<boost::asio::streambuf> buffer, size_t bytesTransferred) override;
 };
 
-
 class ReadingArgumentLengthState : public IConnectionState {
 public:
     using IConnectionState::IConnectionState;
+
+    void doRead(std::shared_ptr<boost::asio::streambuf> buffer, size_t bytesTransferred) override;
 };
 
-
-class ErrorState : public IConnectionState {
+class ReadingArgumentState : public IConnectionState {
 public:
     using IConnectionState::IConnectionState;
+
+    void doRead(std::shared_ptr<boost::asio::streambuf> buffer, size_t bytesTransferred) override;
 };
+
+
+
+
 
 } // namespace trogondb

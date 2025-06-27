@@ -27,6 +27,8 @@ void ReadingHeaderState::doRead(std::shared_ptr<boost::asio::streambuf> buffer, 
     std::string data(boost::asio::buffers_begin(buffer->data()),
                      boost::asio::buffers_begin(buffer->data()) + bytesTransferred);
 
+    // m_logger->debug("ReadingHeaderState::doRead() data: {}", data);
+
     size_t pos = data.find("\r\n");
     if (pos == std::string::npos) {
         return;
@@ -54,5 +56,71 @@ void ReadingHeaderState::doRead(std::shared_ptr<boost::asio::streambuf> buffer, 
     }
 }
 
+void ReadingArgumentLengthState::doRead(std::shared_ptr<boost::asio::streambuf> buffer, size_t bytesTransferred)
+{
+    buffer->commit(bytesTransferred);
+
+    std::string data(boost::asio::buffers_begin(buffer->data()),
+                     boost::asio::buffers_begin(buffer->data()) + bytesTransferred);
+
+    // m_logger->debug("ReadingArgumentLengthState::doRead() data: {}", data);
+
+    size_t pos = data.find("\r\n");
+    if (pos == std::string::npos) {
+        return;
+    }
+
+    size_t bytesConsumed = pos + 2;
+
+    if (data[0] != '$') {
+        m_logger->error("Failed ReadingArgumentLengthState::doRead(): expected '$'");
+        m_connection->changeState(std::make_shared<ErrorState>(m_connection));
+        m_connection->cancel();
+        return;
+    }
+
+    size_t bulkLen = std::stoi(data.substr(1, pos));
+
+    m_logger->debug("ArgumentLengthStateState::doRead() bulkLen: {}", bulkLen);
+
+    buffer->consume(bytesConsumed);
+
+    m_connection->changeState(std::make_shared<ReadingArgumentState>(m_connection));
+
+    if (bytesTransferred > bytesConsumed) {
+        m_connection->m_state->doRead(buffer, bytesTransferred - bytesConsumed);
+    }
+}
+
+void ReadingArgumentState::doRead(std::shared_ptr<boost::asio::streambuf> buffer, size_t bytesTransferred)
+{
+    buffer->commit(bytesTransferred);
+
+    std::string data(boost::asio::buffers_begin(buffer->data()),
+                     boost::asio::buffers_begin(buffer->data()) + bytesTransferred);
+
+    // m_logger->debug("ReadingArgumentState::doRead() data: {}", data);
+
+    size_t pos = data.find("\r\n");
+    if (pos == std::string::npos) {
+        return;
+    }
+
+    size_t bytesConsumed = pos + 2;
+
+    std::string arg = data.substr(0, pos);
+
+    m_logger->debug("ReadingArgumentState::doRead() arg: {}", arg);
+
+    buffer->consume(bytesConsumed);
+
+    m_connection->changeState(std::make_shared<ReadingArgumentLengthState>(m_connection));
+
+    if (bytesTransferred > bytesConsumed) {
+        m_connection->m_state->doRead(buffer, bytesTransferred - bytesConsumed);
+    }
+
+
+}
 
 } // namespace trogondb
