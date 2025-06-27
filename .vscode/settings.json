@@ -89,6 +89,7 @@
         "future": "cpp",
         "iomanip": "cpp",
         "mutex": "cpp",
-        "typeindex": "cpp"
+        "typeindex": "cpp",
+        "cassert": "cpp"
     },
 }

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <boost/asio.hpp>
 
 namespace trogondb {
 
@@ -10,7 +11,7 @@ class IConnectionState : public std::enable_shared_from_this<IConnectionState> {
 public:
     IConnectionState(std::shared_ptr<Connection> connection);
 
-    virtual void doRead(const std::string &data);
+    virtual void doRead(std::shared_ptr<boost::asio::streambuf> buffer, size_t bytesTransferred);
 
     virtual void doWrite();
 
@@ -18,15 +19,15 @@ public:
 
     virtual ~IConnectionState() = default;
 
-private:
+protected:
     std::shared_ptr<Connection> m_connection;
 };
 
-class WaitingForArrayHeaderState : public IConnectionState {
+class ReadingHeaderState : public IConnectionState {
 public:
     using IConnectionState::IConnectionState;
 
-    void doRead(const std::string &data) override;
+    void doRead(std::shared_ptr<boost::asio::streambuf> buffer, size_t bytesTransferred) override;
 };
 
 } // namespace trogondb

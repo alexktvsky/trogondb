@@ -6,7 +6,7 @@ IConnectionState::IConnectionState(std::shared_ptr<Connection> connection)
     : m_connection(connection)
 {}
 
-void IConnectionState::doRead(const std::string &data)
+void IConnectionState::doRead(std::shared_ptr<boost::asio::streambuf> buffer, size_t bytesTransferred)
 {}
 
 void IConnectionState::doWrite()
@@ -16,9 +16,16 @@ void IConnectionState::doTimeout()
 {}
 
 
-void WaitingForArrayHeaderState::doRead(const std::string &data)
+void ReadingHeaderState::doRead(std::shared_ptr<boost::asio::streambuf> buffer, size_t bytesTransferred)
 {
+    buffer->commit(bytesTransferred);
 
+    std::string data(boost::asio::buffers_begin(buffer->data()),
+                     boost::asio::buffers_begin(buffer->data()) + bytesTransferred);
+
+
+
+    // buffer->consume(bytesTransferred);
 }
 
 } // namespace trogondb

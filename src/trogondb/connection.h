@@ -12,7 +12,7 @@
 namespace trogondb {
 
 class Connection : public std::enable_shared_from_this<Connection> {
-    friend class ConnectionState;
+    friend class IConnectionState;
 
 public:
     Connection(boost::asio::ip::tcp::socket socket);
@@ -37,8 +37,8 @@ private:
     std::shared_ptr<IConnectionState> m_state;
 
     boost::asio::ip::tcp::socket m_socket;
-    boost::asio::streambuf m_readBuffer;
-    boost::asio::streambuf m_writeBuffer;
+    std::shared_ptr<boost::asio::streambuf> m_readBuffer;
+    std::shared_ptr<boost::asio::streambuf> m_writeBuffer;
     // boost::asio::steady_timer m_timer;
     std::atomic<bool> m_cancelled;
 };

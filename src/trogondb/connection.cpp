@@ -3,6 +3,7 @@
 #include <fmt/format.h>
 
 #include "trogondb/log/log_manager.h"
+#include "trogondb/exception.h"
 
 namespace trogondb {
 
@@ -12,8 +13,8 @@ Connection::Connection(boost::asio::ip::tcp::socket socket)
     : m_logger(log::LogManager::instance().getDefaultLogger())
     , m_state(nullptr)
     , m_socket(std::move(socket))
-    , m_readBuffer()
-    , m_writeBuffer()
+    , m_readBuffer(std::make_shared<boost::asio::streambuf>())
+    , m_writeBuffer(std::make_shared<boost::asio::streambuf>())
     , m_cancelled(false)
 {}
 
@@ -21,7 +22,7 @@ void Connection::start()
 {
     m_logger->info("Started new connection {}", m_socket.remote_endpoint().address().to_string());
 
-    changeState(std::make_shared<WaitingForArrayHeaderState>(shared_from_this()));
+    changeState(std::make_shared<ReadingHeaderState>(shared_from_this()));
 
     doRead();
 }
@@ -45,7 +46,7 @@ void Connection::changeState(std::shared_ptr<IConnectionState> state)
 
 void Connection::doRead()
 {
-    auto buffer = m_readBuffer.prepare(READ_BUFFER_SIZE);
+    auto buffer = m_readBuffer->prepare(READ_BUFFER_SIZE);
 
     m_socket.async_read_some(buffer, std::bind(&Connection::onReadDone, shared_from_this(), std::placeholders::_1, std::placeholders::_2));
 
@@ -66,14 +67,11 @@ void Connection::onReadDone(const boost::system::error_code &err, size_t bytesTr
         return;
     }
 
-    m_readBuffer.commit(bytesTransferred);
+    if (!m_state) {
+        throw Exception("State is null in Connection::onReadDone()");
+    }
 
-    std::string data(boost::asio::buffers_begin(m_readBuffer.data()),
-                     boost::asio::buffers_begin(m_readBuffer.data()) + bytesTransferred);
-
-    m_readBuffer.consume(bytesTransferred);
-
-    m_state->doRead(data);
+    m_state->doRead(m_readBuffer, bytesTransferred);
 }
 
 
