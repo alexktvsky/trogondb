@@ -47,6 +47,8 @@ public:
 
     void log(Level level, const std::string &msg);
 
+    void setLevel(Level level);
+
     void setFlushLevel(Level level);
 
     void flush();

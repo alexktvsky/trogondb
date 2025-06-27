@@ -37,6 +37,11 @@ void Logger::log(Level level, const std::string &msg)
     m_impl->log(translateLevel(level), msg);
 }
 
+void Logger::setLevel(Level level)
+{
+    m_impl->set_level(translateLevel(level));
+}
+
 void Logger::setFlushLevel(Level level)
 {
     m_impl->flush_on(translateLevel(level));

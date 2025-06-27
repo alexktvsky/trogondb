@@ -27,6 +27,7 @@ Server::Server(std::shared_ptr<Proactor> proactor, std::shared_ptr<Config> &&con
 std::shared_ptr<log::Logger> Server::createLogger(const std::shared_ptr<Config> &config)
 {
     std::vector<std::shared_ptr<log::Handler>> handlers;
+    log::Level minLevel = log::Level::OFF;
 
     for (const auto &log : config->logs) {
         std::shared_ptr<log::Handler> handler;
@@ -44,12 +45,20 @@ std::shared_ptr<log::Logger> Server::createLogger(const std::shared_ptr<Config> 
             handler = std::make_shared<log::FileHandler>(log.target);
         }
 
-        handler->setLevel(log::getLevelByName(log.level));
+        log::Level handlerLevel = log::getLevelByName(log.level);
+        handler->setLevel(handlerLevel);
+
+        if (minLevel > handlerLevel) {
+            minLevel = handlerLevel;
+        }
 
         handlers.push_back(handler);
     }
 
-    return std::make_shared<log::Logger>("server", handlers);
+    auto logger = std::make_shared<log::Logger>("server", handlers);
+    logger->setLevel(minLevel);
+
+    return logger;
 }
 
 void Server::initializeProcess(const std::shared_ptr<Config> &config)

@@ -11,8 +11,11 @@
 
 namespace trogondb {
 
+class IConnectionState;
+
 class Connection : public std::enable_shared_from_this<Connection> {
     friend class IConnectionState;
+    friend class ReadingHeaderState;
 
 public:
     Connection(boost::asio::ip::tcp::socket socket);
@@ -27,10 +30,6 @@ private:
     void doRead();
 
     void onReadDone(const boost::system::error_code &err, size_t bytesTransferred);
-
-
-
-
 
 
     std::shared_ptr<log::Logger> m_logger;

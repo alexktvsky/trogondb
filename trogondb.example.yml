@@ -10,10 +10,10 @@ log:
   - target: stdout
     level: debug
 
-  - target: /tmp/trogondb.log
-    level: debug
+  # - target: /tmp/trogondb.log
+  #   level: debug
 
-  - target: /tmp/rtserver_debug.log
-    level: debug
-    limit: 30M
-    rotate: 3
+  # - target: /tmp/rtserver_debug.log
+  #   level: debug
+  #   limit: 30M
+  #   rotate: 3
