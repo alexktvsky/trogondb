@@ -42,6 +42,16 @@ private:
     std::shared_ptr<boost::asio::streambuf> m_writeBuffer;
     // boost::asio::steady_timer m_timer;
     std::atomic<bool> m_cancelled;
+
+    struct Context {
+        uint32_t expectedArgsCount;
+        size_t expectedNextBulkLength;
+
+        std::string cmd;
+        std::vector<std::string> args;
+    };
+
+    Context m_context;
 };
 
 } // namespace trogondb

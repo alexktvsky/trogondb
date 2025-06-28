@@ -41,9 +41,8 @@ void ReadingHeaderState::doRead(std::shared_ptr<boost::asio::streambuf> buffer, 
         return;
     }
 
-    size_t elementsCount = std::stoi(data.substr(1, pos));
-
-    m_logger->debug("ReadingHeaderState::doRead() count: {}", elementsCount);
+    m_connection->m_context.expectedArgsCount = std::stoi(data.substr(1, pos)); // skip '*'
+    m_logger->debug("ReadingHeaderState::doRead() m_expectedArgsCount: {}", m_connection->m_context.expectedArgsCount);
 
     buffer->consume(bytesConsumed);
 
@@ -75,9 +74,8 @@ void ReadingArgumentLengthState::doRead(std::shared_ptr<boost::asio::streambuf> 
         return;
     }
 
-    size_t bulkLen = std::stoi(data.substr(1, pos));
-
-    m_logger->debug("ArgumentLengthStateState::doRead() argLen: {}", bulkLen);
+    m_connection->m_context.expectedNextBulkLength = std::stoi(data.substr(1, pos)); // skip '$'
+    m_logger->debug("ArgumentLengthStateState::doRead() expectedNextBulkLength: {}", m_connection->m_context.expectedNextBulkLength);
 
     buffer->consume(bytesConsumed);
 
@@ -102,9 +100,20 @@ void ReadingArgumentState::doRead(std::shared_ptr<boost::asio::streambuf> buffer
 
     size_t bytesConsumed = pos + 2;
 
-    std::string arg = data.substr(0, pos);
+    std::string bulk = data.substr(0, pos);
+    m_logger->debug("ReadingArgumentState::doRead() bulk: {}", bulk);
 
-    m_logger->debug("ReadingArgumentState::doRead() arg: {}", arg);
+    if (bulk.length() != m_connection->m_context.expectedNextBulkLength) {
+        m_logger->error("Failed to ReadingArgumentState::doRead(): length of '{}' ({}) does not match expected length ({})", bulk, bulk.size(), m_connection->m_context.expectedNextBulkLength);
+    }
+
+    // First bulk is a name of command
+    if (m_connection->m_context.cmd.length() == 0) {
+        m_connection->m_context.cmd = bulk;
+    }
+    else {
+        m_connection->m_context.args.push_back(bulk);
+    }
 
     buffer->consume(bytesConsumed);
 
@@ -112,9 +121,14 @@ void ReadingArgumentState::doRead(std::shared_ptr<boost::asio::streambuf> buffer
 
     if (bytesTransferred > bytesConsumed) {
         m_connection->m_state->doRead(buffer, bytesTransferred - bytesConsumed);
+        return;
     }
 
-    // execute command
+    if (m_connection->m_context.args.size() == m_connection->m_context.expectedArgsCount - 1) {
+        m_logger->debug("execute command {}", m_connection->m_context.cmd);
+        // execute command
+        // m_connection->changeState(std::make_shared<XXX>(m_connection));
+    }
 }
 
 } // namespace trogondb

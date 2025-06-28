@@ -46,6 +46,10 @@ void Connection::changeState(std::shared_ptr<IConnectionState> state)
 
 void Connection::doRead()
 {
+    if (m_cancelled.load()) {
+        return;
+    }
+
     auto buffer = m_readBuffer->prepare(READ_BUFFER_SIZE);
 
     m_socket.async_read_some(buffer, std::bind(&Connection::onReadDone, shared_from_this(), std::placeholders::_1, std::placeholders::_2));
