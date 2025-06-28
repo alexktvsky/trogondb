@@ -4,6 +4,10 @@
 
 #include "trogondb/log/log_manager.h"
 #include "trogondb/exception.h"
+#include "trogondb/cmd/ping_command.h"
+#include "trogondb/cmd/echo_command.h"
+#include "trogondb/cmd/get_command.h"
+#include "trogondb/cmd/set_command.h"
 
 namespace trogondb {
 
@@ -76,9 +80,48 @@ void Connection::onReadDone(const boost::system::error_code &err, size_t bytesTr
     }
 
     m_state->doRead(m_readBuffer, bytesTransferred);
-
-    doRead();
 }
 
+
+void Connection::doWrite()
+{
+    if (m_cancelled.load()) {
+        return;
+    }
+
+    m_socket.async_write_some(m_writeBuffer->data(), std::bind(&Connection::onWriteDone, shared_from_this(), std::placeholders::_1, std::placeholders::_2));
+}
+
+void Connection::onWriteDone(const boost::system::error_code &err, size_t bytesTransferred)
+{
+
+}
+
+void Connection::executeCommand(const std::string &commandName, const std::vector<std::string> &args)
+{
+    std::unique_ptr<cmd::ICommand> cmd;
+    std::string outputData;
+
+    if (commandName == "ping") {
+        cmd = std::make_unique<cmd::PingCommand>();
+    }
+    if (commandName == "echo" && args.size() == 1) {
+        cmd = std::make_unique<cmd::EchoCommand>(args[0]);
+    }
+    // if (commandName == "get" && args.size() == 1) {
+    //     cmd = std::make_unique<cmd::GetCommand>(m_store, args[0]);
+    // }
+    // if ((commandName == "set") && (args.size() == 2 || args.size() == 4)) {
+    //     cmd = std::make_unique<cmd::SetCommand>(m_store, args);
+    // }
+    else {
+        //  outputData = "-ERR unknown command\r\n";
+        throw Exception("aaaaa");
+    }
+
+    outputData = cmd->execute();
+
+
+}
 
 } // namespace trogondb

@@ -16,7 +16,7 @@ public:
 
     virtual void doRead(std::shared_ptr<boost::asio::streambuf> buffer, size_t bytesTransferred);
 
-    virtual void doWrite();
+    virtual void doWrite(std::shared_ptr<boost::asio::streambuf> buffer, size_t bytesTransferred);
 
     virtual void doTimeout();
 
@@ -27,9 +27,12 @@ protected:
     std::shared_ptr<log::Logger> m_logger;
 };
 
+
 class ErrorState : public IConnectionState {
 public:
     using IConnectionState::IConnectionState;
+
+    void doWrite(std::shared_ptr<boost::asio::streambuf> buffer, size_t bytesTransferred) override;
 };
 
 class ReadingHeaderState : public IConnectionState {
@@ -53,7 +56,12 @@ public:
     void doRead(std::shared_ptr<boost::asio::streambuf> buffer, size_t bytesTransferred) override;
 };
 
+class WritingResponseState : public IConnectionState {
+public:
+    using IConnectionState::IConnectionState;
 
+    void doWrite(std::shared_ptr<boost::asio::streambuf> buffer, size_t bytesTransferred) override;
+};
 
 
 

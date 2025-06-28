@@ -33,6 +33,14 @@ private:
 
     void onReadDone(const boost::system::error_code &err, size_t bytesTransferred);
 
+    void doWrite();
+
+    void onWriteDone(const boost::system::error_code &err, size_t bytesTransferred);
+
+
+    // TODO: move to another class
+    void executeCommand(const std::string &cmd, const std::vector<std::string> &args);
+
 
     std::shared_ptr<log::Logger> m_logger;
     std::shared_ptr<IConnectionState> m_state;

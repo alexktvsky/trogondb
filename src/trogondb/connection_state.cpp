@@ -14,11 +14,13 @@ IConnectionState::IConnectionState(std::shared_ptr<Connection> connection)
 void IConnectionState::doRead(std::shared_ptr<boost::asio::streambuf> buffer, size_t bytesTransferred)
 {}
 
-void IConnectionState::doWrite()
+void IConnectionState::doWrite(std::shared_ptr<boost::asio::streambuf> buffer, size_t bytesTransferred)
 {}
 
 void IConnectionState::doTimeout()
 {}
+
+
 
 void ReadingHeaderState::doRead(std::shared_ptr<boost::asio::streambuf> buffer, size_t bytesTransferred)
 {
@@ -29,6 +31,7 @@ void ReadingHeaderState::doRead(std::shared_ptr<boost::asio::streambuf> buffer, 
 
     size_t pos = data.find("\r\n");
     if (pos == std::string::npos) {
+        m_connection->doRead();
         return;
     }
 
@@ -36,8 +39,8 @@ void ReadingHeaderState::doRead(std::shared_ptr<boost::asio::streambuf> buffer, 
 
     if (data[0] != '*') {
         m_logger->error("Failed ReadingHeaderState::doRead(): expected '*'");
-        m_connection->changeState(std::make_shared<ErrorState>(m_connection));
-        m_connection->cancel();
+        // m_connection->changeState(std::make_shared<ErrorState>(m_connection));
+        // m_connection->doWrite();
         return;
     }
 
@@ -50,7 +53,10 @@ void ReadingHeaderState::doRead(std::shared_ptr<boost::asio::streambuf> buffer, 
 
     if (bytesTransferred > bytesConsumed) {
         m_connection->m_state->doRead(buffer, bytesTransferred - bytesConsumed);
+        return;
     }
+
+    m_connection->doRead();
 }
 
 void ReadingArgumentLengthState::doRead(std::shared_ptr<boost::asio::streambuf> buffer, size_t bytesTransferred)
@@ -62,6 +68,7 @@ void ReadingArgumentLengthState::doRead(std::shared_ptr<boost::asio::streambuf> 
 
     size_t pos = data.find("\r\n");
     if (pos == std::string::npos) {
+        m_connection->doRead();
         return;
     }
 
@@ -69,8 +76,8 @@ void ReadingArgumentLengthState::doRead(std::shared_ptr<boost::asio::streambuf> 
 
     if (data[0] != '$') {
         m_logger->error("Failed ReadingArgumentLengthState::doRead(): expected '$'");
-        m_connection->changeState(std::make_shared<ErrorState>(m_connection));
-        m_connection->cancel();
+        // m_connection->changeState(std::make_shared<ErrorState>(m_connection));
+        // m_connection->doWrite();
         return;
     }
 
@@ -83,7 +90,10 @@ void ReadingArgumentLengthState::doRead(std::shared_ptr<boost::asio::streambuf> 
 
     if (bytesTransferred > bytesConsumed) {
         m_connection->m_state->doRead(buffer, bytesTransferred - bytesConsumed);
+        return;
     }
+
+    m_connection->doRead();
 }
 
 void ReadingArgumentState::doRead(std::shared_ptr<boost::asio::streambuf> buffer, size_t bytesTransferred)
@@ -95,6 +105,7 @@ void ReadingArgumentState::doRead(std::shared_ptr<boost::asio::streambuf> buffer
 
     size_t pos = data.find("\r\n");
     if (pos == std::string::npos) {
+        m_connection->doRead();
         return;
     }
 
@@ -105,6 +116,8 @@ void ReadingArgumentState::doRead(std::shared_ptr<boost::asio::streambuf> buffer
 
     if (bulk.length() != m_connection->m_context.expectedNextBulkLength) {
         m_logger->error("Failed to ReadingArgumentState::doRead(): length of '{}' ({}) does not match expected length ({})", bulk, bulk.size(), m_connection->m_context.expectedNextBulkLength);
+        // m_connection->changeState(std::make_shared<ErrorState>(m_connection));
+        // m_connection->doWrite();
     }
 
     // First bulk is a name of command
@@ -125,10 +138,25 @@ void ReadingArgumentState::doRead(std::shared_ptr<boost::asio::streambuf> buffer
     }
 
     if (m_connection->m_context.args.size() == m_connection->m_context.expectedArgsCount - 1) {
-        m_logger->debug("execute command {}", m_connection->m_context.cmd);
-        // execute command
-        // m_connection->changeState(std::make_shared<XXX>(m_connection));
+        m_logger->debug("Executing command '{}'", m_connection->m_context.cmd);
+        m_connection->executeCommand(m_connection->m_context.cmd, m_connection->m_context.args);
+        // m_connection->changeState(std::make_shared<WritingResponseState>(m_connection));
     }
+    else {
+        m_connection->doRead();
+    }
+}
+
+
+void ErrorState::doWrite(std::shared_ptr<boost::asio::streambuf> buffer, size_t bytesTransferred)
+{
+
+    // m_connection->cancel();
+}
+
+void WritingResponseState::doWrite(std::shared_ptr<boost::asio::streambuf> buffer, size_t bytesTransferred)
+{
+
 }
 
 } // namespace trogondb
