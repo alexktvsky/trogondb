@@ -43,6 +43,7 @@ PRIVATE
     src/trogondb/exception.cpp
     src/trogondb/utils.cpp
     src/trogondb/os/process.cpp
+    src/trogondb/cmd/command_result.cpp
     src/trogondb/cmd/ping_command.cpp
     src/trogondb/cmd/echo_command.cpp
     src/trogondb/cmd/get_command.cpp

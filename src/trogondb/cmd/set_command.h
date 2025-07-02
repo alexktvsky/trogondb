@@ -8,7 +8,6 @@
 
 #include "trogondb/cmd/command.h"
 #include "trogondb/kv_store.h"
-#include "trogondb/utils.h"
 
 namespace trogondb {
 namespace cmd {
@@ -16,7 +15,7 @@ namespace cmd {
 class SetCommand : public ICommand {
 public:
     SetCommand(const std::shared_ptr<KeyValueStore> &store, const std::vector<std::string> &args);
-    std::string execute() override;
+    CommandResult execute() override;
 
 private:
     std::string m_key;

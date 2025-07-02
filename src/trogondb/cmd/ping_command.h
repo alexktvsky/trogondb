@@ -9,7 +9,7 @@ namespace cmd {
 
 class PingCommand : public ICommand {
 public:
-    std::string execute() override;
+    CommandResult execute() override;
 };
 
 } // namespace cmd

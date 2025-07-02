@@ -8,15 +8,15 @@ GetCommand::GetCommand(const std::shared_ptr<KeyValueStore> &store, const std::s
     , m_store(store)
 {}
 
-std::string GetCommand::execute()
+CommandResult GetCommand::execute()
 {
     auto opt = m_store->getValue(m_key);
     if (opt) {
         std::string const &val = opt.value();
-        return "$" + std::to_string(val.size()) + "\r\n" + val + "\r\n";
+        return CommandResult::value("$" + std::to_string(val.size()) + "\r\n" + val + "\r\n");
     }
 
-    return "$-1\r\n";
+    return CommandResult::value("$-1\r\n");
 }
 
 } // namespace cmd

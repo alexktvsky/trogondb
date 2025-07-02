@@ -12,7 +12,7 @@ namespace cmd {
 class GetCommand : public ICommand {
 public:
     GetCommand(const std::shared_ptr<KeyValueStore> &store, const std::string &key);
-    std::string execute() override;
+    CommandResult execute() override;
 
 private:
     std::string m_key;

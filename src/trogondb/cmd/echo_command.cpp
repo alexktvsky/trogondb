@@ -7,9 +7,9 @@ EchoCommand::EchoCommand(const std::string &msg)
     : m_msg(msg)
 {}
 
-std::string EchoCommand::execute()
+CommandResult EchoCommand::execute()
 {
-    return "$" + std::to_string(m_msg.size()) + "\r\n" + m_msg + "\r\n";
+    return CommandResult::value("$" + std::to_string(m_msg.size()) + "\r\n" + m_msg + "\r\n");
 }
 
 } // namespace cmd

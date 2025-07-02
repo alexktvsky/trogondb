@@ -3,9 +3,9 @@
 namespace trogondb {
 namespace cmd {
 
-std::string PingCommand::execute()
+CommandResult PingCommand::execute()
 {
-    return "+PONG\r\n";
+    return CommandResult::value("+PONG\r\n");
 }
 
 } // namespace cmd

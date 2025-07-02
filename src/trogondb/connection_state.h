@@ -27,14 +27,6 @@ protected:
     std::shared_ptr<log::Logger> m_logger;
 };
 
-
-class ErrorState : public IConnectionState {
-public:
-    using IConnectionState::IConnectionState;
-
-    void doWrite(std::shared_ptr<boost::asio::streambuf> buffer, size_t bytesTransferred) override;
-};
-
 class ReadingHeaderState : public IConnectionState {
 public:
     using IConnectionState::IConnectionState;
@@ -56,11 +48,24 @@ public:
     void doRead(std::shared_ptr<boost::asio::streambuf> buffer, size_t bytesTransferred) override;
 };
 
-class WritingResponseState : public IConnectionState {
+class ErrorState : public IConnectionState {
 public:
-    using IConnectionState::IConnectionState;
+    ErrorState(std::shared_ptr<Connection> connection, const std::string &message);
 
     void doWrite(std::shared_ptr<boost::asio::streambuf> buffer, size_t bytesTransferred) override;
+
+private:
+    std::string m_message;
+};
+
+class WritingResponseState : public IConnectionState {
+public:
+    WritingResponseState(std::shared_ptr<Connection> connection, const std::string &message);
+
+    void doWrite(std::shared_ptr<boost::asio::streambuf> buffer, size_t bytesTransferred) override;
+
+private:
+    std::string m_output;
 };
 
 
