@@ -81,6 +81,7 @@ void Connection::onReadDone(const boost::system::error_code &err, size_t bytesTr
 
 void Connection::doWrite()
 {
+    m_logger->debug("Connection::doWrite()");
     if (m_cancelled.load()) {
         return;
     }
@@ -92,6 +93,7 @@ void Connection::doWrite()
 
 void Connection::onWriteDone(const boost::system::error_code &err, size_t bytesTransferred)
 {
+    m_logger->debug("Connection::doWrite() bytesTransferred: {}", bytesTransferred);
     m_state->doWrite(m_writeBuffer, bytesTransferred);
 }
 

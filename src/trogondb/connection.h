@@ -18,6 +18,8 @@ class Connection : public std::enable_shared_from_this<Connection> {
     friend class ReadingHeaderState;
     friend class ReadingArgumentLengthState;
     friend class ReadingArgumentState;
+    friend class ErrorState;
+    friend class WritingResponseState;
 
 public:
     Connection(boost::asio::ip::tcp::socket socket);

@@ -22,13 +22,13 @@ cmd::CommandResult executeCommand(const std::string &commandName, const std::vec
     if (commandName == "ping") {
         cmd = std::make_unique<cmd::PingCommand>();
     }
-    if (commandName == "echo" && args.size() == 1) {
+    else if (commandName == "echo" && args.size() == 1) {
         cmd = std::make_unique<cmd::EchoCommand>(args[0]);
     }
-    // if (commandName == "get" && args.size() == 1) {
+    // else if (commandName == "get" && args.size() == 1) {
     //     cmd = std::make_unique<cmd::GetCommand>(m_store, args[0]);
     // }
-    // if ((commandName == "set") && (args.size() == 2 || args.size() == 4)) {
+    // else if ((commandName == "set") && (args.size() == 2 || args.size() == 4)) {
     //     cmd = std::make_unique<cmd::SetCommand>(m_store, args);
     // }
     else {
@@ -186,21 +186,29 @@ void ReadingArgumentState::doRead(std::shared_ptr<boost::asio::streambuf> buffer
     }
 }
 
-ErrorState::ErrorState(std::shared_ptr<Connection> connection, const std::string &message)
+ErrorState::ErrorState(std::shared_ptr<Connection> connection, const std::string &output)
     : IConnectionState(connection)
-    , m_message(message)
+    , m_output(output)
 {}
 
 void ErrorState::doWrite(std::shared_ptr<boost::asio::streambuf> buffer, size_t bytesTransferred)
 {
-    size_t size = m_message.size();
-    auto outputBuffer = buffer->prepare(size);
+    m_logger->debug("ErrorState::doWrite() bytesTransferred: {}", bytesTransferred);
 
-    std::copy(m_message.begin(), m_message.end(), boost::asio::buffer_cast<unsigned char*>(outputBuffer));
+    if (bytesTransferred > 0) {
+        m_output.erase(0, bytesTransferred);
+    }
 
-    buffer->commit(size);
+    if (m_output.size() == 0) {
+        m_connection->cancel();
+        return;
+    }
 
-    // m_connection->cancel();
+    auto outputBuffer = buffer->prepare(m_output.size());
+
+    std::copy(m_output.begin(), m_output.end(), boost::asio::buffer_cast<unsigned char*>(outputBuffer));
+
+    buffer->commit(m_output.size());
 }
 
 WritingResponseState::WritingResponseState(std::shared_ptr<Connection> connection, const std::string &output)
@@ -210,7 +218,22 @@ WritingResponseState::WritingResponseState(std::shared_ptr<Connection> connectio
 
 void WritingResponseState::doWrite(std::shared_ptr<boost::asio::streambuf> buffer, size_t bytesTransferred)
 {
+    m_logger->debug("WritingResponseState::doWrite() bytesTransferred: {}", bytesTransferred);
 
+    if (bytesTransferred > 0) {
+        m_output.erase(0, bytesTransferred);
+    }
+
+    if (m_output.size() == 0) {
+        m_connection->cancel();
+        return;
+    }
+
+    auto outputBuffer = buffer->prepare(m_output.size());
+
+    std::copy(m_output.begin(), m_output.end(), boost::asio::buffer_cast<unsigned char*>(outputBuffer));
+
+    buffer->commit(m_output.size());
 }
 
 } // namespace trogondb
