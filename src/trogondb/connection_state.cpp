@@ -200,7 +200,8 @@ void ErrorState::doWrite(std::shared_ptr<boost::asio::streambuf> buffer, size_t 
     }
 
     if (m_output.size() == 0) {
-        m_connection->cancel();
+        m_connection->changeState(std::make_shared<ClosedState>(m_connection));
+        m_connection->close();
         return;
     }
 
@@ -225,7 +226,8 @@ void WritingResponseState::doWrite(std::shared_ptr<boost::asio::streambuf> buffe
     }
 
     if (m_output.size() == 0) {
-        m_connection->cancel();
+        m_connection->changeState(std::make_shared<ClosedState>(m_connection));
+        m_connection->close();
         return;
     }
 

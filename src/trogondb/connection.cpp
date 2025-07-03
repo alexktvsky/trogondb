@@ -9,8 +9,9 @@ namespace trogondb {
 
 constexpr size_t READ_BUFFER_SIZE = 1024;
 
-Connection::Connection(boost::asio::ip::tcp::socket socket)
-    : m_logger(log::LogManager::instance().getDefaultLogger())
+Connection::Connection(std::shared_ptr<ConnectionManager>connectionManager, boost::asio::ip::tcp::socket socket)
+    : m_connectionManager(connectionManager)
+    , m_logger(log::LogManager::instance().getDefaultLogger())
     , m_state(nullptr)
     , m_socket(std::move(socket))
     , m_readBuffer(std::make_shared<boost::asio::streambuf>())
@@ -27,16 +28,21 @@ void Connection::start()
     doRead();
 }
 
-void Connection::cancel()
+void Connection::close()
 {
-    // TODO
     if (m_cancelled.load()) {
         return;
     }
 
+    m_logger->info("Closing connection {}", m_socket.remote_endpoint().address().to_string());
     m_socket.cancel();
-
     m_cancelled.store(true);
+    m_connectionManager->removeConnection(shared_from_this());
+}
+
+bool Connection::isClosed() const
+{
+    return m_cancelled.load();
 }
 
 void Connection::changeState(std::shared_ptr<IConnectionState> state)
@@ -61,13 +67,13 @@ void Connection::onReadDone(const boost::system::error_code &err, size_t bytesTr
 {
     if (err) {
         if (err == boost::asio::error::eof) {
-            m_logger->info("Client closed connection");
+            m_logger->debug("Client closed connection");
         }
         else {
             m_logger->error("Failed to onReadDone(): {}", err.message());
         }
 
-        cancel();
+        close();
         return;
     }
 
@@ -77,7 +83,6 @@ void Connection::onReadDone(const boost::system::error_code &err, size_t bytesTr
 
     m_state->doRead(m_readBuffer, bytesTransferred);
 }
-
 
 void Connection::doWrite()
 {

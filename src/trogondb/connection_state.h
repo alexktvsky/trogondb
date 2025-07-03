@@ -68,4 +68,9 @@ private:
     std::string m_output;
 };
 
+class ClosedState : public IConnectionState {
+public:
+    using IConnectionState::IConnectionState;
+};
+
 } // namespace trogondb

@@ -8,25 +8,30 @@
 
 #include "trogondb/log/logger.h"
 #include "trogondb/connection_state.h"
+#include "trogondb/connection_manager.h"
 
 namespace trogondb {
 
 class IConnectionState;
+class ConnectionManager;
 
 class Connection : public std::enable_shared_from_this<Connection> {
     friend class IConnectionState;
     friend class ReadingHeaderState;
     friend class ReadingArgumentLengthState;
     friend class ReadingArgumentState;
-    friend class ErrorState;
     friend class WritingResponseState;
+    friend class ClosedState;
+    friend class ErrorState;
 
 public:
-    Connection(boost::asio::ip::tcp::socket socket);
+    Connection(std::shared_ptr<ConnectionManager> connectionManager, boost::asio::ip::tcp::socket socket);
 
     void start();
 
-    void cancel();
+    void close();
+
+    bool isClosed() const;
 
 private:
     void changeState(std::shared_ptr<IConnectionState> state);
@@ -39,10 +44,9 @@ private:
 
     void onWriteDone(const boost::system::error_code &err, size_t bytesTransferred);
 
-
+    std::shared_ptr<ConnectionManager> m_connectionManager;
     std::shared_ptr<log::Logger> m_logger;
     std::shared_ptr<IConnectionState> m_state;
-
     boost::asio::ip::tcp::socket m_socket;
     std::shared_ptr<boost::asio::streambuf> m_readBuffer;
     std::shared_ptr<boost::asio::streambuf> m_writeBuffer;
