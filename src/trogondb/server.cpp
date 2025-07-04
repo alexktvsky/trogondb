@@ -22,6 +22,7 @@ Server::Server(std::shared_ptr<Proactor> proactor, std::shared_ptr<Config> &&con
     , m_connectionManager(std::make_shared<ConnectionManager>())
     , m_accepter(std::make_shared<Acceptor>(m_proactor, m_connectionManager))
     , m_store(std::make_shared<KeyValueStore>())
+    , m_commandExecutor(std::make_shared<CommandExecutor>(m_store))
 {}
 
 std::shared_ptr<log::Logger> Server::createLogger(const std::shared_ptr<Config> &config)

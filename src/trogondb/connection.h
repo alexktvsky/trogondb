@@ -59,7 +59,6 @@ private:
         std::string cmd;
         std::vector<std::string> args;
     };
-
     ParseContext m_context;
 };
 

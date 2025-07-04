@@ -9,8 +9,7 @@
 namespace trogondb {
 
 CommandExecutor::CommandExecutor(std::shared_ptr<KeyValueStore> store)
-    : m_logger(log::LogManager::instance().getDefaultLogger())
-    , m_store(store)
+    : m_store(store)
     , m_commands()
 {
     m_commands["ping"] = std::make_shared<cmd::PingCommand>();
@@ -21,14 +20,12 @@ CommandExecutor::CommandExecutor(std::shared_ptr<KeyValueStore> store)
 
 cmd::CommandResult CommandExecutor::execute(const std::string &commandName, const std::vector<std::string> &args)
 {
-    std::shared_ptr<cmd::ICommand> cmd;
+    auto iter = m_commands.find(commandName);
+    if (iter == m_commands.end()) {
+        return cmd::CommandResult::error(fmt::format("unknown command '{}'\r\n", commandName));
+    }
 
-
-
-
-    // else {
-    //     return cmd::CommandResult::error(fmt::format("unknown command '{}', with args beginning with: \r\n", commandName, args[0]));
-    // }
+    std::shared_ptr<cmd::ICommand> cmd = iter->second;
 
     return cmd->execute(args);
 }
