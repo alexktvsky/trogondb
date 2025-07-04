@@ -91,14 +91,11 @@ void Connection::doWrite()
         return;
     }
 
-    m_state->doWrite(m_writeBuffer, 0);
-
     m_socket.async_write_some(m_writeBuffer->data(), std::bind(&Connection::onWriteDone, shared_from_this(), std::placeholders::_1, std::placeholders::_2));
 }
 
 void Connection::onWriteDone(const boost::system::error_code &err, size_t bytesTransferred)
 {
-    m_logger->debug("Connection::doWrite() bytesTransferred: {}", bytesTransferred);
     m_state->doWrite(m_writeBuffer, bytesTransferred);
 }
 

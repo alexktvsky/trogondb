@@ -32,7 +32,7 @@ cmd::CommandResult executeCommand(const std::string &commandName, const std::vec
     //     cmd = std::make_unique<cmd::SetCommand>(m_store, args);
     // }
     else {
-        return cmd::CommandResult::error("-ERR unknown command\r\n");
+        return cmd::CommandResult::error(fmt::format("unknown command '{}', with args beginning with: \r\n", commandName, args[0]));
     }
 
     return cmd->execute();
@@ -53,7 +53,6 @@ void IConnectionState::doTimeout()
 {}
 
 
-
 void ReadingHeaderState::doRead(std::shared_ptr<boost::asio::streambuf> buffer, size_t bytesTransferred)
 {
     buffer->commit(bytesTransferred);
@@ -70,9 +69,9 @@ void ReadingHeaderState::doRead(std::shared_ptr<boost::asio::streambuf> buffer, 
     size_t bytesConsumed = pos + 2;
 
     if (data[0] != '*') {
-        m_logger->error("Failed ReadingHeaderState::doRead(): expected '*'");
-        m_connection->changeState(std::make_shared<ErrorState>(m_connection, "Failed to ...")); // TODO
-        m_connection->doWrite();
+        m_logger->error("Failed ReadingHeaderState::doRead(): expected '*', got '{}'", data[0]);
+        m_connection->changeState(std::make_shared<ErrorState>(m_connection, fmt::format("-ERR Protocol error: expected '*', got '{}'", data[0])));
+        m_connection->m_state->doWrite(m_connection->m_writeBuffer, 0);
         return;
     }
 
@@ -107,9 +106,9 @@ void ReadingArgumentLengthState::doRead(std::shared_ptr<boost::asio::streambuf> 
     size_t bytesConsumed = pos + 2;
 
     if (data[0] != '$') {
-        m_logger->error("Failed ReadingArgumentLengthState::doRead(): expected '$'");
-        m_connection->changeState(std::make_shared<ErrorState>(m_connection, "Failed to ...")); // TODO
-        m_connection->doWrite();
+        m_logger->error("Failed ReadingArgumentLengthState::doRead(): expected '$', got '{}'", data[0]);
+        m_connection->changeState(std::make_shared<ErrorState>(m_connection, fmt::format("-ERR Protocol error: expected '$', got '{}'", data[0])));
+        m_connection->m_state->doWrite(m_connection->m_writeBuffer, 0);
         return;
     }
 
@@ -148,8 +147,8 @@ void ReadingArgumentState::doRead(std::shared_ptr<boost::asio::streambuf> buffer
 
     if (bulk.length() != m_connection->m_context.expectedNextBulkLength) {
         m_logger->error("Failed to ReadingArgumentState::doRead(): length of '{}' ({}) does not match expected length ({})", bulk, bulk.size(), m_connection->m_context.expectedNextBulkLength);
-        m_connection->changeState(std::make_shared<ErrorState>(m_connection, "Failed to ...")); // TODO
-        m_connection->doWrite();
+        m_connection->changeState(std::make_shared<ErrorState>(m_connection, fmt::format("-ERR Protocol error: length of '{}' ({}) does not match expected length ({})", bulk, bulk.size(), m_connection->m_context.expectedNextBulkLength)));
+        m_connection->m_state->doWrite(m_connection->m_writeBuffer, 0);
     }
 
     // First bulk is a name of command
@@ -174,11 +173,11 @@ void ReadingArgumentState::doRead(std::shared_ptr<boost::asio::streambuf> buffer
         cmd::CommandResult result = executeCommand(m_connection->m_context.cmd, m_connection->m_context.args);
         if (result.ok) {
             m_connection->changeState(std::make_shared<WritingResponseState>(m_connection, result.output));
-            m_connection->doWrite();
+            m_connection->m_state->doWrite(m_connection->m_writeBuffer, 0);
         }
         else {
-            m_connection->changeState(std::make_shared<ErrorState>(m_connection, fmt::format("Failed to ...: {}", result.output)));
-            m_connection->doWrite();
+            m_connection->changeState(std::make_shared<ErrorState>(m_connection, fmt::format("-ERR {}", result.output)));
+            m_connection->m_state->doWrite(m_connection->m_writeBuffer, 0);
         }
     }
     else {
@@ -210,6 +209,8 @@ void ErrorState::doWrite(std::shared_ptr<boost::asio::streambuf> buffer, size_t 
     std::copy(m_output.begin(), m_output.end(), boost::asio::buffer_cast<unsigned char*>(outputBuffer));
 
     buffer->commit(m_output.size());
+
+    m_connection->doWrite();
 }
 
 WritingResponseState::WritingResponseState(std::shared_ptr<Connection> connection, const std::string &output)
@@ -236,6 +237,8 @@ void WritingResponseState::doWrite(std::shared_ptr<boost::asio::streambuf> buffe
     std::copy(m_output.begin(), m_output.end(), boost::asio::buffer_cast<unsigned char*>(outputBuffer));
 
     buffer->commit(m_output.size());
+
+    m_connection->doWrite();
 }
 
 } // namespace trogondb

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "command_result.h"
+#include "trogondb/cmd/command_result.h"
 
 namespace trogondb {
 namespace cmd {
