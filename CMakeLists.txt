@@ -42,6 +42,7 @@ PRIVATE
     src/trogondb/kv_store.cpp
     src/trogondb/exception.cpp
     src/trogondb/utils.cpp
+    src/trogondb/command_executor.cpp
     src/trogondb/os/process.cpp
     src/trogondb/cmd/command_result.cpp
     src/trogondb/cmd/ping_command.cpp

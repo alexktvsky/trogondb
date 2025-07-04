@@ -3,20 +3,22 @@
 namespace trogondb {
 namespace cmd {
 
-GetCommand::GetCommand(const std::shared_ptr<KeyValueStore> &store, const std::string &key)
-    : m_key(key)
-    , m_store(store)
+GetCommand::GetCommand(const std::shared_ptr<KeyValueStore> &store)
+    : m_store(store)
 {}
 
-CommandResult GetCommand::execute()
+CommandResult GetCommand::execute(const std::vector<std::string> &args)
 {
-    auto opt = m_store->getValue(m_key);
-    if (opt) {
-        std::string const &val = opt.value();
-        return CommandResult::value("$" + std::to_string(val.size()) + "\r\n" + val + "\r\n");
+    if (args.size() != 1) {
+        return cmd::CommandResult::error("Invalid number of arguments"); // TODO
     }
 
-    return CommandResult::value("$-1\r\n");
+    auto opt = m_store->getValue(args[0]);
+    if (!opt) {
+        return CommandResult::value("$-1\r\n");
+    }
+
+    return CommandResult::value("$" + std::to_string(opt.value().size()) + "\r\n" + opt.value() + "\r\n");
 }
 
 } // namespace cmd

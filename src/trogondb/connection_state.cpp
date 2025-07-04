@@ -22,20 +22,20 @@ cmd::CommandResult executeCommand(const std::string &commandName, const std::vec
     if (commandName == "ping") {
         cmd = std::make_unique<cmd::PingCommand>();
     }
-    else if (commandName == "echo" && args.size() == 1) {
-        cmd = std::make_unique<cmd::EchoCommand>(args[0]);
+    else if (commandName == "echo") {
+        cmd = std::make_unique<cmd::EchoCommand>();
     }
-    // else if (commandName == "get" && args.size() == 1) {
-    //     cmd = std::make_unique<cmd::GetCommand>(m_store, args[0]);
+    // else if (commandName == "get") {
+    //     cmd = std::make_unique<cmd::GetCommand>(m_store);
     // }
-    // else if ((commandName == "set") && (args.size() == 2 || args.size() == 4)) {
-    //     cmd = std::make_unique<cmd::SetCommand>(m_store, args);
+    // else if (commandName == "set") {
+    //     cmd = std::make_unique<cmd::SetCommand>(m_store);
     // }
     else {
-        return cmd::CommandResult::error(fmt::format("unknown command '{}', with args beginning with: \r\n", commandName, args[0]));
+        return cmd::CommandResult::error(fmt::format("unknown command '{}', with args beginning with: {}\r\n", commandName, args[0]));
     }
 
-    return cmd->execute();
+    return cmd->execute(args);
 }
 
 IConnectionState::IConnectionState(std::shared_ptr<Connection> connection)

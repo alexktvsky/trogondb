@@ -9,10 +9,7 @@ namespace cmd {
 
 class EchoCommand : public ICommand {
 public:
-    EchoCommand(const std::string &msg);
-    CommandResult execute() override;
-private:
-    std::string m_msg;
+    CommandResult execute(const std::vector<std::string> &args) override;
 };
 
 } // namespace cmd

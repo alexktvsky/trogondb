@@ -3,13 +3,13 @@
 namespace trogondb {
 namespace cmd {
 
-EchoCommand::EchoCommand(const std::string &msg)
-    : m_msg(msg)
-{}
-
-CommandResult EchoCommand::execute()
+CommandResult EchoCommand::execute(const std::vector<std::string> &args)
 {
-    return CommandResult::value("$" + std::to_string(m_msg.size()) + "\r\n" + m_msg + "\r\n");
+    if (args.size() != 1) {
+        return cmd::CommandResult::error("Invalid number of arguments"); // TODO
+    }
+
+    return CommandResult::value("$" + std::to_string(args[0].length()) + "\r\n" + args[0] + "\r\n");
 }
 
 } // namespace cmd

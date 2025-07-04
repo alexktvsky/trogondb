@@ -11,11 +11,10 @@ namespace cmd {
 
 class GetCommand : public ICommand {
 public:
-    GetCommand(const std::shared_ptr<KeyValueStore> &store, const std::string &key);
-    CommandResult execute() override;
+    GetCommand(const std::shared_ptr<KeyValueStore> &store);
+    CommandResult execute(const std::vector<std::string> &args) override;
 
 private:
-    std::string m_key;
     std::shared_ptr<KeyValueStore> m_store;
 };
 
