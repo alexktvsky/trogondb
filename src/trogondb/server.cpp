@@ -19,10 +19,11 @@ Server::Server(std::shared_ptr<Proactor> proactor, std::shared_ptr<Config> &&con
     : m_config(std::move(config))
     , m_logger(createLogger(m_config))
     , m_proactor(std::make_shared<Proactor>())
-    , m_connectionManager(std::make_shared<ConnectionManager>())
+    , m_connectionManager()
     , m_accepter(std::make_shared<Acceptor>(m_proactor, m_connectionManager))
     , m_store(std::make_shared<KeyValueStore>())
     , m_commandExecutor(std::make_shared<CommandExecutor>(m_store))
+    , m_isInitialized()
 {}
 
 std::shared_ptr<log::Logger> Server::createLogger(const std::shared_ptr<Config> &config)
@@ -87,11 +88,13 @@ void Server::initializeProcess(const std::shared_ptr<Config> &config)
 
 void Server::initialize()
 {
-    initializeProcess(m_config);
+    m_connectionManager = std::make_shared<ConnectionManager>(shared_from_this());
 
     m_accepter->addListener(m_config->port);
     m_accepter->run();
     m_accepter->setNonBlocking(true);
+
+    initializeProcess(m_config);
 }
 
 std::shared_ptr<log::Logger> Server::getLogger() const
@@ -101,9 +104,12 @@ std::shared_ptr<log::Logger> Server::getLogger() const
 
 void Server::start()
 {
-    initialize();
-    m_logger->info("Starting server with pid {}", os::Process::getPid());
+    if (m_isInitialized) {
+        initialize();
+        m_isInitialized = true;
+    }
 
+    m_logger->info("Starting server with pid {}", os::Process::getPid());
     m_proactor->run();
 }
 
@@ -111,6 +117,7 @@ void Server::stop()
 {
     // TODO
     m_proactor->stop();
+    m_accepter->stop();
 }
 
 void Server::restart()

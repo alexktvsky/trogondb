@@ -17,6 +17,7 @@ Connection::Connection(std::shared_ptr<ConnectionManager>connectionManager, boos
     , m_readBuffer(std::make_shared<boost::asio::streambuf>())
     , m_writeBuffer(std::make_shared<boost::asio::streambuf>())
     , m_cancelled(false)
+    , m_closeMutex()
 {}
 
 void Connection::start()
@@ -30,14 +31,17 @@ void Connection::start()
 
 void Connection::close()
 {
+    std::lock_guard<std::mutex> lock(m_closeMutex);
+
     if (m_cancelled.load()) {
         return;
     }
 
     m_logger->info("Closing connection {}", m_socket.remote_endpoint().address().to_string());
     m_socket.cancel();
-    m_cancelled.store(true);
     m_connectionManager->removeConnection(shared_from_this());
+
+    m_cancelled.store(true);
 }
 
 bool Connection::isClosed() const

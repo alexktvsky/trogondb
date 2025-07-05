@@ -4,6 +4,8 @@
 #include <cstdint>
 #include <string>
 #include <memory>
+#include <atomic>
+#include <mutex>
 #include <boost/asio.hpp>
 
 #include "trogondb/log/logger.h"
@@ -52,6 +54,7 @@ private:
     std::shared_ptr<boost::asio::streambuf> m_writeBuffer;
     // boost::asio::steady_timer m_timer;
     std::atomic<bool> m_cancelled;
+    std::mutex m_closeMutex;
 
     struct ParseContext {
         uint32_t expectedArgsCount;

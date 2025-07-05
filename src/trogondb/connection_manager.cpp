@@ -2,6 +2,15 @@
 
 namespace trogondb {
 
+ConnectionManager::ConnectionManager(std::weak_ptr<Server> server)
+    : m_server(server)
+{}
+
+std::weak_ptr<Server> ConnectionManager::getServer() const
+{
+    return m_server;
+}
+
 std::shared_ptr<Connection> ConnectionManager::createConnection(boost::asio::ip::tcp::socket socket)
 {
     auto connection = std::make_shared<Connection>(shared_from_this(), std::move(socket));

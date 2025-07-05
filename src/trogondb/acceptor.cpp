@@ -6,10 +6,11 @@ namespace trogondb {
 
 Acceptor::Acceptor(std::shared_ptr<Proactor> proactor,
                    std::shared_ptr<ConnectionManager> connectionManager)
-    : m_acceptor(std::make_shared<boost::asio::ip::tcp::acceptor>(*proactor->getImpl()))
-    , m_stopped(false)
+    : m_logger(log::LogManager::instance().getDefaultLogger())
+    , m_acceptor(std::make_shared<boost::asio::ip::tcp::acceptor>(*proactor->getImpl()))
     , m_connectionManager(connectionManager)
-    , m_logger(log::LogManager::instance().getDefaultLogger())
+    , m_stopped(false)
+    , m_stopMutex()
 {}
 
 void Acceptor::setNonBlocking(bool mode)
@@ -33,7 +34,20 @@ void Acceptor::run()
 
 void Acceptor::stop()
 {
+    std::lock_guard<std::mutex> lock(m_stopMutex);
+
+    if (m_stopped.load()) {
+        return;
+    }
+
+    // TODO
+
     m_stopped.store(true);
+}
+
+bool Acceptor::isStopped() const
+{
+    return m_stopped.load();
 }
 
 void Acceptor::accept()

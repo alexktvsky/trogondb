@@ -73,11 +73,11 @@ int main(int argc, char **argv)
 
         auto proactor = std::make_shared<trogondb::Proactor>();
 
-        trogondb::Server server(proactor, std::move(config));
+        auto server = std::make_shared<trogondb::Server>(proactor, std::move(config));
 
-        trogondb::log::LogManager::instance().setDefaultLogger(server.getLogger());
+        trogondb::log::LogManager::instance().setDefaultLogger(server->getLogger());
 
-        server.start();
+        server->start();
     }
     catch (const trogondb::CommandLineException &e) {
         std::fprintf(stderr, "%s\n\n", e.what());

@@ -14,7 +14,7 @@
 
 namespace trogondb {
 
-class Server {
+class Server : public std::enable_shared_from_this<Server> {
 public:
     Server(std::shared_ptr<Proactor> proactor, const std::shared_ptr<Config> &config);
 
@@ -42,6 +42,7 @@ private:
     std::shared_ptr<Acceptor> m_accepter;
     std::shared_ptr<KeyValueStore> m_store;
     std::shared_ptr<CommandExecutor> m_commandExecutor;
+    bool m_isInitialized;
 };
 
 } // namespace trogondb

@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <memory>
 #include <atomic>
-#include <functional>
+#include <mutex>
 #include <boost/asio.hpp>
 
 #include "trogondb/proactor.h"
@@ -24,15 +24,18 @@ public:
 
     void stop();
 
+    bool isStopped() const;
+
 private:
     void accept();
 
     void onAccept(const boost::system::error_code &err, boost::asio::ip::tcp::socket socket);
 
-    std::shared_ptr<boost::asio::ip::tcp::acceptor> m_acceptor;
-    std::atomic<bool> m_stopped;
-    std::shared_ptr<ConnectionManager> m_connectionManager;
     std::shared_ptr<log::Logger> m_logger;
+    std::shared_ptr<boost::asio::ip::tcp::acceptor> m_acceptor;
+    std::shared_ptr<ConnectionManager> m_connectionManager;
+    std::atomic<bool> m_stopped;
+    std::mutex m_stopMutex;
 };
 
 } // namespace trogondb
