@@ -44,11 +44,8 @@ PRIVATE
     src/trogondb/utils.cpp
     src/trogondb/command_executor.cpp
     src/trogondb/os/process.cpp
-    src/trogondb/cmd/command_result.cpp
-    src/trogondb/cmd/ping_command.cpp
-    src/trogondb/cmd/echo_command.cpp
-    src/trogondb/cmd/get_command.cpp
-    src/trogondb/cmd/set_command.cpp
+    src/trogondb/command_result.cpp
+    src/trogondb/command.cpp
     src/trogondb/log/logger.cpp
     src/trogondb/log/log_manager.cpp
     src/trogondb/log/level.cpp

@@ -1,7 +1,6 @@
-#include "trogondb/cmd/command_result.h"
+#include "trogondb/command_result.h"
 
 namespace trogondb {
-namespace cmd {
 
 CommandResult::CommandResult(const std::string &output, bool ok)
     : output(output)
@@ -46,5 +45,4 @@ CommandResult CommandResult::error(const std::string &output)
     return {output, false};
 }
 
-} // namespace cmd
 } // namespace trogondb

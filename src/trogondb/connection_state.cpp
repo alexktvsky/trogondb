@@ -160,7 +160,7 @@ void ReadingArgumentState::doRead(std::shared_ptr<boost::asio::streambuf> buffer
         auto executor = m_connection->getConnectionManager().lock()->getServer().lock()->getCommandExecutor().lock();
         m_logger->debug("Executing command '{}' with {} args", m_connection->m_context.cmd, m_connection->m_context.args.size());
 
-        cmd::CommandResult result = executor->execute(m_connection->m_context.cmd, m_connection->m_context.args);
+        CommandResult result = executor->execute(m_connection->m_context.cmd, m_connection->m_context.args);
         if (result.ok) {
             m_connection->changeState(std::make_shared<WritingResponseState>(m_connection, result.output));
             m_connection->m_state->doWrite(m_connection->m_writeBuffer, 0);

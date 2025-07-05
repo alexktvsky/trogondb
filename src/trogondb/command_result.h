@@ -4,7 +4,6 @@
 #include <utility>
 
 namespace trogondb {
-namespace cmd {
 
 class CommandResult {
 public:
@@ -27,5 +26,4 @@ public:
     bool ok;
 };
 
-} // namespace cmd
 } // namespace trogondb
