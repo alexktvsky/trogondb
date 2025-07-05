@@ -22,9 +22,9 @@ CommandResult SetCommand::execute(const std::vector<std::string> &args)
 
     if (args.size() == 4 && stringToLower(args[2]) == "px") {
         int64_t expiryMs = 0;
-        auto result = std::from_chars(args[4].data(), args[4].data() + args[4].size(), expiryMs);
+        auto result = std::from_chars(args[3].data(), args[3].data() + args[3].size(), expiryMs);
         if (result.ec != std::errc()) {
-            return cmd::CommandResult::error(fmt::format("Invalid value of TTL '{}'", args[4]));
+            return cmd::CommandResult::error(fmt::format("Invalid value of TTL '{}'", args[3]));
         }
 
         expiryTime = std::chrono::steady_clock::now() + std::chrono::milliseconds(expiryMs);

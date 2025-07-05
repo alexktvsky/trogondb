@@ -14,8 +14,8 @@ CommandExecutor::CommandExecutor(std::shared_ptr<KeyValueStore> store)
 {
     m_commands["ping"] = std::make_shared<cmd::PingCommand>();
     m_commands["echo"] = std::make_shared<cmd::EchoCommand>();
-    m_commands["get"] = std::make_shared<cmd::EchoCommand>();
-    m_commands["set"] = std::make_shared<cmd::EchoCommand>();
+    m_commands["get"] = std::make_shared<cmd::GetCommand>(m_store);
+    m_commands["set"] = std::make_shared<cmd::SetCommand>(m_store);
 }
 
 cmd::CommandResult CommandExecutor::execute(const std::string &commandName, const std::vector<std::string> &args)

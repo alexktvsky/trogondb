@@ -9,9 +9,9 @@ namespace trogondb {
 
 constexpr size_t READ_BUFFER_SIZE = 1024;
 
-Connection::Connection(std::shared_ptr<ConnectionManager>connectionManager, boost::asio::ip::tcp::socket socket)
-    : m_connectionManager(connectionManager)
-    , m_logger(log::LogManager::instance().getDefaultLogger())
+Connection::Connection(std::weak_ptr<ConnectionManager>connectionManager, boost::asio::ip::tcp::socket socket)
+    : m_logger(log::LogManager::instance().getDefaultLogger())
+    , m_connectionManager(connectionManager)
     , m_state(nullptr)
     , m_socket(std::move(socket))
     , m_readBuffer(std::make_shared<boost::asio::streambuf>())
@@ -39,14 +39,19 @@ void Connection::close()
 
     m_logger->info("Closing connection {}", m_socket.remote_endpoint().address().to_string());
     m_socket.cancel();
-    m_connectionManager->removeConnection(shared_from_this());
-
     m_cancelled.store(true);
+
+    m_connectionManager.lock()->removeConnection(shared_from_this());
 }
 
 bool Connection::isClosed() const
 {
     return m_cancelled.load();
+}
+
+std::weak_ptr<ConnectionManager> Connection::getConnectionManager() const
+{
+    return m_connectionManager;
 }
 
 void Connection::changeState(std::shared_ptr<IConnectionState> state)

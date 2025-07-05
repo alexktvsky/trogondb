@@ -20,10 +20,10 @@ Server::Server(std::shared_ptr<Proactor> proactor, std::shared_ptr<Config> &&con
     , m_logger(createLogger(m_config))
     , m_proactor(std::make_shared<Proactor>())
     , m_connectionManager()
-    , m_accepter(std::make_shared<Acceptor>(m_proactor, m_connectionManager))
+    , m_accepter()
     , m_store(std::make_shared<KeyValueStore>())
     , m_commandExecutor(std::make_shared<CommandExecutor>(m_store))
-    , m_isInitialized()
+    , m_isInitialized(false)
 {}
 
 std::shared_ptr<log::Logger> Server::createLogger(const std::shared_ptr<Config> &config)
@@ -89,6 +89,7 @@ void Server::initializeProcess(const std::shared_ptr<Config> &config)
 void Server::initialize()
 {
     m_connectionManager = std::make_shared<ConnectionManager>(shared_from_this());
+    m_accepter = std::make_shared<Acceptor>(m_proactor, m_connectionManager);
 
     m_accepter->addListener(m_config->port);
     m_accepter->run();
@@ -102,9 +103,14 @@ std::shared_ptr<log::Logger> Server::getLogger() const
     return m_logger;
 }
 
+std::weak_ptr<CommandExecutor> Server::getCommandExecutor() const
+{
+    return m_commandExecutor;
+}
+
 void Server::start()
 {
-    if (m_isInitialized) {
+    if (!m_isInitialized) {
         initialize();
         m_isInitialized = true;
     }

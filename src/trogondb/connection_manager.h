@@ -4,6 +4,7 @@
 #include <list>
 
 #include "trogondb/connection.h"
+#include "trogondb/server.h"
 #include "trogondb/log/logger.h"
 
 namespace trogondb {

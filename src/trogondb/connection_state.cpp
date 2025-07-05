@@ -139,16 +139,18 @@ void ReadingArgumentState::doRead(std::shared_ptr<boost::asio::streambuf> buffer
     }
 
     if (m_connection->m_context.args.size() == m_connection->m_context.expectedArgsCount - 1) {
-        m_logger->debug("Executing command '{}'", m_connection->m_context.cmd);
-        // cmd::CommandResult result = executeCommand(m_connection->m_context.cmd, m_connection->m_context.args);
-        // if (result.ok) {
-        //     m_connection->changeState(std::make_shared<WritingResponseState>(m_connection, result.output));
-        //     m_connection->m_state->doWrite(m_connection->m_writeBuffer, 0);
-        // }
-        // else {
-        //     m_connection->changeState(std::make_shared<ErrorState>(m_connection, fmt::format("-ERR {}", result.output)));
-        //     m_connection->m_state->doWrite(m_connection->m_writeBuffer, 0);
-        // }
+        auto executor = m_connection->getConnectionManager().lock()->getServer().lock()->getCommandExecutor().lock();
+        m_logger->debug("Executing command '{}' with {} args", m_connection->m_context.cmd, m_connection->m_context.args.size());
+
+        cmd::CommandResult result = executor->execute(m_connection->m_context.cmd, m_connection->m_context.args);
+        if (result.ok) {
+            m_connection->changeState(std::make_shared<WritingResponseState>(m_connection, result.output));
+            m_connection->m_state->doWrite(m_connection->m_writeBuffer, 0);
+        }
+        else {
+            m_connection->changeState(std::make_shared<ErrorState>(m_connection, fmt::format("-ERR {}", result.output)));
+            m_connection->m_state->doWrite(m_connection->m_writeBuffer, 0);
+        }
     }
     else {
         m_connection->doRead();
@@ -163,6 +165,8 @@ ErrorState::ErrorState(std::shared_ptr<Connection> connection, const std::string
 void ErrorState::doWrite(std::shared_ptr<boost::asio::streambuf> buffer, size_t bytesTransferred)
 {
     m_logger->debug("ErrorState::doWrite() bytesTransferred: {}", bytesTransferred);
+
+    m_logger->debug("ErrorState::doWrite(), output: {}", m_output);
 
     if (bytesTransferred > 0) {
         m_output.erase(0, bytesTransferred);

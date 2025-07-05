@@ -4,6 +4,7 @@ namespace trogondb {
 
 ConnectionManager::ConnectionManager(std::weak_ptr<Server> server)
     : m_server(server)
+    , m_connections()
 {}
 
 std::weak_ptr<Server> ConnectionManager::getServer() const

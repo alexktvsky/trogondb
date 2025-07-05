@@ -22,6 +22,8 @@ public:
 
     std::shared_ptr<log::Logger> getLogger() const;
 
+    std::weak_ptr<CommandExecutor> getCommandExecutor() const;
+
     void start();
 
     void stop();

@@ -27,13 +27,15 @@ class Connection : public std::enable_shared_from_this<Connection> {
     friend class ErrorState;
 
 public:
-    Connection(std::shared_ptr<ConnectionManager> connectionManager, boost::asio::ip::tcp::socket socket);
+    Connection(std::weak_ptr<ConnectionManager> connectionManager, boost::asio::ip::tcp::socket socket);
 
     void start();
 
     void close();
 
     bool isClosed() const;
+
+    std::weak_ptr<ConnectionManager> getConnectionManager() const;
 
 private:
     void changeState(std::shared_ptr<IConnectionState> state);
@@ -46,8 +48,8 @@ private:
 
     void onWriteDone(const boost::system::error_code &err, size_t bytesTransferred);
 
-    std::shared_ptr<ConnectionManager> m_connectionManager;
     std::shared_ptr<log::Logger> m_logger;
+    std::weak_ptr<ConnectionManager> m_connectionManager;
     std::shared_ptr<IConnectionState> m_state;
     boost::asio::ip::tcp::socket m_socket;
     std::shared_ptr<boost::asio::streambuf> m_readBuffer;
