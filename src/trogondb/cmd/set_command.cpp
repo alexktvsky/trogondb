@@ -1,6 +1,5 @@
 #include "trogondb/cmd/set_command.h"
 
-#include <charconv>
 #include <fmt/format.h>
 
 #include "trogondb/utils.h"
@@ -21,13 +20,12 @@ CommandResult SetCommand::execute(const std::vector<std::string> &args)
     std::optional<std::chrono::steady_clock::time_point> expiryTime;
 
     if (args.size() == 4 && stringToLower(args[2]) == "px") {
-        int64_t expiryMs = 0;
-        auto result = std::from_chars(args[3].data(), args[3].data() + args[3].size(), expiryMs);
-        if (result.ec != std::errc()) {
+        auto expiryMs = stringToNumber<int64_t>(args[3]);
+        if (!expiryMs) {
             return cmd::CommandResult::error(fmt::format("Invalid value of TTL '{}'", args[3]));
         }
 
-        expiryTime = std::chrono::steady_clock::now() + std::chrono::milliseconds(expiryMs);
+        expiryTime = std::chrono::steady_clock::now() + std::chrono::milliseconds(expiryMs.value());
     }
 
     m_store->setValue(args[0], args[1], expiryTime);

@@ -88,6 +88,10 @@ int main(int argc, char **argv)
         std::fprintf(stderr, "%s\n", e.what());
         return 1;
     }
+    catch (const boost::system::system_error &e) {
+        std::fprintf(stderr, "%s\n", e.what());
+        return 1;
+    }
     catch (...) {
         // TODO: Add error log
         throw;

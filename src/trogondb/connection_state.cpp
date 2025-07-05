@@ -22,7 +22,6 @@ void IConnectionState::doWrite(std::shared_ptr<boost::asio::streambuf> buffer, s
 void IConnectionState::doTimeout()
 {}
 
-
 void ReadingHeaderState::doRead(std::shared_ptr<boost::asio::streambuf> buffer, size_t bytesTransferred)
 {
     buffer->commit(bytesTransferred);
@@ -45,7 +44,16 @@ void ReadingHeaderState::doRead(std::shared_ptr<boost::asio::streambuf> buffer, 
         return;
     }
 
-    m_connection->m_context.expectedArgsCount = std::stoi(data.substr(1, pos)); // skip '*'
+    std::string expectedArgsStr = data.substr(1, pos); // skip '*'
+    auto expectedArgsCount = stringToNumber<uint32_t>(expectedArgsStr);
+    if (!expectedArgsCount) {
+        m_logger->error("Failed to ReadingHeaderState::doRead(): invalid multibulk length");
+        m_connection->changeState(std::make_shared<ErrorState>(m_connection, "-ERR Protocol error: invalid multibulk length"));
+        m_connection->m_state->doWrite(m_connection->m_writeBuffer, 0);
+        return;
+    }
+
+    m_connection->m_context.expectedArgsCount = expectedArgsCount.value();
     m_logger->debug("ReadingHeaderState::doRead() expectedArgsCount: {}", m_connection->m_context.expectedArgsCount);
 
     buffer->consume(bytesConsumed);
@@ -82,7 +90,16 @@ void ReadingArgumentLengthState::doRead(std::shared_ptr<boost::asio::streambuf> 
         return;
     }
 
-    m_connection->m_context.expectedNextBulkLength = std::stoi(data.substr(1, pos)); // skip '$'
+    std::string bulkLengthStr = data.substr(1, pos); // skip '$'
+    auto bulkLength = stringToNumber<uint32_t>(bulkLengthStr);
+    if (!bulkLength) {
+        m_logger->error("Failed to ReadingArgumentLengthState::doRead(): invalid bulk length");
+        m_connection->changeState(std::make_shared<ErrorState>(m_connection, "-ERR Protocol error: invalid bulk length"));
+        m_connection->m_state->doWrite(m_connection->m_writeBuffer, 0);
+        return;
+    }
+
+    m_connection->m_context.expectedNextBulkLength = bulkLength.value();
     m_logger->debug("ArgumentLengthStateState::doRead() expectedNextBulkLength: {}", m_connection->m_context.expectedNextBulkLength);
 
     buffer->consume(bytesConsumed);
@@ -119,6 +136,7 @@ void ReadingArgumentState::doRead(std::shared_ptr<boost::asio::streambuf> buffer
         m_logger->error("Failed to ReadingArgumentState::doRead(): length of '{}' ({}) does not match expected length ({})", bulk, bulk.size(), m_connection->m_context.expectedNextBulkLength);
         m_connection->changeState(std::make_shared<ErrorState>(m_connection, fmt::format("-ERR Protocol error: length of '{}' ({}) does not match expected length ({})", bulk, bulk.size(), m_connection->m_context.expectedNextBulkLength)));
         m_connection->m_state->doWrite(m_connection->m_writeBuffer, 0);
+        return;
     }
 
     // First bulk is a name of command
