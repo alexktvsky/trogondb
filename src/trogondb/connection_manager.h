@@ -23,7 +23,7 @@ public:
 
     void removeConnection(const std::shared_ptr<Connection> &connection);
 
-    void closeAll();
+    void removeAll();
 
 private:
     std::weak_ptr<Server> m_server;

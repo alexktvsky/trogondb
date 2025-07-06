@@ -37,7 +37,7 @@ private:
     std::shared_ptr<boost::asio::ip::tcp::acceptor> m_acceptor;
     std::weak_ptr<ConnectionManager> m_connectionManager;
     std::atomic<bool> m_stopped;
-    std::mutex m_stopMutex;
+    std::mutex m_mutex;
 };
 
 } // namespace trogondb

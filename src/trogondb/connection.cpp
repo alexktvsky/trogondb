@@ -16,8 +16,6 @@ Connection::Connection(std::weak_ptr<ConnectionManager>connectionManager, boost:
     , m_socket(std::move(socket))
     , m_readBuffer(std::make_shared<boost::asio::streambuf>())
     , m_writeBuffer(std::make_shared<boost::asio::streambuf>())
-    , m_cancelled(false)
-    , m_closeMutex()
 {}
 
 void Connection::start()
@@ -31,22 +29,18 @@ void Connection::start()
 
 void Connection::close()
 {
-    std::lock_guard<std::mutex> lock(m_closeMutex);
-
-    if (m_cancelled.load()) {
+    if (!m_socket.is_open()) {
         return;
     }
-    m_cancelled.store(true);
 
     m_logger->info("Closing connection {}", m_socket.remote_endpoint().address().to_string());
-    m_socket.cancel();
 
-    m_connectionManager.lock()->removeConnection(shared_from_this());
+    m_socket.cancel();
 }
 
 bool Connection::isClosed() const
 {
-    return m_cancelled.load();
+    return !m_socket.is_open();
 }
 
 std::weak_ptr<ConnectionManager> Connection::getConnectionManager() const
@@ -61,7 +55,7 @@ void Connection::changeState(std::shared_ptr<IConnectionState> state)
 
 void Connection::doRead()
 {
-    if (m_cancelled.load()) {
+    if (!m_socket.is_open()) {
         return;
     }
 
@@ -95,11 +89,6 @@ void Connection::onReadDone(const boost::system::error_code &err, size_t bytesTr
 
 void Connection::doWrite()
 {
-    m_logger->debug("Connection::doWrite()");
-    if (m_cancelled.load()) {
-        return;
-    }
-
     m_socket.async_write_some(m_writeBuffer->data(), std::bind(&Connection::onWriteDone, shared_from_this(), std::placeholders::_1, std::placeholders::_2));
 }
 

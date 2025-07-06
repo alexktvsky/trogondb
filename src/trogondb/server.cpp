@@ -24,9 +24,7 @@ Server::Server(std::shared_ptr<Proactor> proactor, std::shared_ptr<Config> &&con
     , m_store(std::make_shared<KeyValueStore>())
     , m_commandExecutor(std::make_shared<CommandExecutor>(m_store))
     , m_initialized(false)
-    , m_initMutex()
     , m_running(false)
-    , m_mutex()
 {}
 
 std::shared_ptr<log::Logger> Server::createLogger(const std::shared_ptr<Config> &config)
@@ -91,12 +89,10 @@ void Server::initializeProcess(const std::shared_ptr<Config> &config)
 
 void Server::initialize()
 {
-    std::lock_guard<std::mutex> lock(m_initMutex);
-
     if (m_initialized) {
         return;
     }
-    m_initialized.store(true);
+    m_initialized = true;
 
     m_connectionManager = std::make_shared<ConnectionManager>(shared_from_this());
     m_acceptor = std::make_shared<Acceptor>(m_proactor, m_connectionManager);
@@ -119,24 +115,20 @@ std::weak_ptr<CommandExecutor> Server::getCommandExecutor() const
 
 void Server::start()
 {
-    std::lock_guard<std::mutex> lock(m_mutex);
-
-    if (m_running.load(std::memory_order_acquire)) {
+    if (m_running) {
         return;
     }
 
-    initialize();
-
-    m_acceptor->run();
-
+    m_running = true;
     m_logger->info("Starting server with pid {}", os::Process::getPid());
+
+    initialize();
+    m_acceptor->run();
 }
 
 void Server::stop()
 {
-    std::lock_guard<std::mutex> lock(m_mutex);
-
-    if (!m_running.load(std::memory_order_acquire)) {
+    if (!m_running) {
         return;
     }
 
@@ -146,7 +138,7 @@ void Server::stop()
         m_acceptor->stop();
     }
 
-    m_connectionManager->closeAll();
+    m_connectionManager->removeAll();
 
     m_logger->info("Server stopped");
 }
@@ -158,7 +150,7 @@ void Server::restart()
 
 bool Server::isRunning() const
 {
-    return m_running.load();
+    return m_running;
 }
 
 } // namespace trogondb

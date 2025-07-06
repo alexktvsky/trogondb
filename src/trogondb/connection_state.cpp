@@ -191,8 +191,9 @@ void ErrorState::doWrite(std::shared_ptr<boost::asio::streambuf> buffer, size_t 
     }
 
     if (m_output.size() == 0) {
-        m_connection.lock()->changeState(std::make_shared<ClosedState>(m_connection.lock()));
         m_connection.lock()->close();
+        m_connection.lock()->changeState(std::make_shared<ClosedState>(m_connection.lock()));
+        m_connection.lock()->getConnectionManager().lock()->removeConnection(m_connection.lock());
         return;
     }
 
@@ -219,8 +220,9 @@ void WritingResponseState::doWrite(std::shared_ptr<boost::asio::streambuf> buffe
     }
 
     if (m_output.size() == 0) {
-        m_connection.lock()->changeState(std::make_shared<ClosedState>(m_connection.lock()));
         m_connection.lock()->close();
+        m_connection.lock()->changeState(std::make_shared<ClosedState>(m_connection.lock()));
+        m_connection.lock()->getConnectionManager().lock()->removeConnection(m_connection.lock());
         return;
     }
 

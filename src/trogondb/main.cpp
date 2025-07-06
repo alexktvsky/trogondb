@@ -82,16 +82,16 @@ int main(int argc, char **argv)
         proactor->run();
     }
     catch (const trogondb::CommandLineException &e) {
-        std::fprintf(stderr, "%s\n\n", e.what());
+        fmt::print(stderr, "{}\n\n", e.what());
         printHelpInfo();
         return 1;
     }
     catch (const trogondb::ConfigFileException &e) {
-        std::fprintf(stderr, "%s\n", e.what());
+        fmt::print(stderr, "{}\n", e.what());
         return 1;
     }
     catch (const boost::system::system_error &e) {
-        std::fprintf(stderr, "%s\n", e.what());
+        fmt::print(stderr, "{}\n", e.what());
         return 1;
     }
     catch (...) {

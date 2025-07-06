@@ -18,6 +18,7 @@ class IConnectionState;
 class ConnectionManager;
 
 class Connection : public std::enable_shared_from_this<Connection> {
+    friend class ConnectionManager;
     friend class IConnectionState;
     friend class ReadingHeaderState;
     friend class ReadingArgumentLengthState;
@@ -27,8 +28,6 @@ class Connection : public std::enable_shared_from_this<Connection> {
     friend class ErrorState;
 
 public:
-    Connection(std::weak_ptr<ConnectionManager> connectionManager, boost::asio::ip::tcp::socket socket);
-
     void start();
 
     void close();
@@ -38,6 +37,10 @@ public:
     std::weak_ptr<ConnectionManager> getConnectionManager() const;
 
 private:
+    Connection(std::weak_ptr<ConnectionManager> connectionManager, boost::asio::ip::tcp::socket socket);
+
+    // ~Connection() = default;
+
     void changeState(std::shared_ptr<IConnectionState> state);
 
     void doRead();
@@ -55,8 +58,6 @@ private:
     std::shared_ptr<boost::asio::streambuf> m_readBuffer;
     std::shared_ptr<boost::asio::streambuf> m_writeBuffer;
     // boost::asio::steady_timer m_timer; // TODO
-    std::atomic<bool> m_cancelled;
-    std::mutex m_closeMutex;
 
     struct ParseContext {
         uint32_t expectedArgsCount;

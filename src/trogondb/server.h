@@ -19,10 +19,6 @@ public:
 
     Server(std::shared_ptr<Proactor> proactor, std::shared_ptr<Config> &&config);
 
-    std::shared_ptr<log::Logger> getLogger() const;
-
-    std::weak_ptr<CommandExecutor> getCommandExecutor() const;
-
     void start();
 
     void stop();
@@ -30,6 +26,10 @@ public:
     void restart();
 
     bool isRunning() const;
+
+    std::shared_ptr<log::Logger> getLogger() const;
+
+    std::weak_ptr<CommandExecutor> getCommandExecutor() const;
 
 private:
     static std::shared_ptr<log::Logger> createLogger(const std::shared_ptr<Config> &config);
@@ -45,11 +45,8 @@ private:
     std::shared_ptr<Acceptor> m_acceptor;
     std::shared_ptr<KeyValueStore> m_store;
     std::shared_ptr<CommandExecutor> m_commandExecutor;
-
-    std::atomic<bool> m_initialized;
-    std::mutex m_initMutex;
-    std::atomic<bool> m_running;
-    std::mutex m_mutex;
+    bool m_initialized;
+    bool m_running;
 };
 
 } // namespace trogondb

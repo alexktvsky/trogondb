@@ -10,7 +10,7 @@ Acceptor::Acceptor(std::weak_ptr<Proactor> proactor,
     , m_acceptor(std::make_shared<boost::asio::ip::tcp::acceptor>(*proactor.lock()->getImpl()))
     , m_connectionManager(connectionManager)
     , m_stopped(false)
-    , m_stopMutex()
+    , m_mutex()
 {}
 
 void Acceptor::setNonBlocking(bool mode)
@@ -34,12 +34,11 @@ void Acceptor::run()
 
 void Acceptor::stop()
 {
-    std::lock_guard<std::mutex> lock(m_stopMutex);
+    std::lock_guard<std::mutex> lock(m_mutex);
 
-    if (m_stopped.load()) {
+    if (m_stopped.load(std::memory_order_acquire)) {
         return;
     }
-
     m_stopped.store(true);
 
     m_acceptor->cancel();
@@ -48,13 +47,12 @@ void Acceptor::stop()
 
 bool Acceptor::isStopped() const
 {
-    return m_stopped.load();
+    return m_stopped.load(std::memory_order_acquire);
 }
 
 void Acceptor::accept()
 {
-    m_acceptor->async_accept(
-        std::bind(&Acceptor::onAccept, shared_from_this(), std::placeholders::_1, std::placeholders::_2));
+    m_acceptor->async_accept(std::bind(&Acceptor::onAccept, shared_from_this(), std::placeholders::_1, std::placeholders::_2));
 }
 
 void Acceptor::onAccept(const boost::system::error_code &err, boost::asio::ip::tcp::socket socket)
@@ -67,8 +65,7 @@ void Acceptor::onAccept(const boost::system::error_code &err, boost::asio::ip::t
         m_logger->error("Failed to accept a new connection: {}", err.message());
     }
 
-    if (m_stopped.load()) {
-        m_acceptor->close();
+    if (m_stopped.load(std::memory_order_acquire)) {
         return;
     }
 
