@@ -1,7 +1,6 @@
 #pragma once
 
 #include <memory>
-#include <list>
 
 #include "trogondb/config.h"
 #include "trogondb/log/logger.h"
@@ -22,7 +21,7 @@ public:
 
     std::shared_ptr<log::Logger> getLogger() const;
 
-    std::shared_ptr<CommandExecutor> getCommandExecutor() const;
+    std::weak_ptr<CommandExecutor> getCommandExecutor() const;
 
     void start();
 
@@ -45,7 +44,7 @@ private:
     std::shared_ptr<KeyValueStore> m_store;
     std::shared_ptr<CommandExecutor> m_commandExecutor;
 
-    std::atomic<bool> m_isInitialized;
+    std::atomic<bool> m_initialized;
     std::mutex m_initMutex;
     std::atomic<bool> m_stopped;
     std::mutex m_stopMutex;

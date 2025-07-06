@@ -4,10 +4,10 @@
 
 namespace trogondb {
 
-Acceptor::Acceptor(std::shared_ptr<Proactor> proactor,
-                   std::shared_ptr<ConnectionManager> connectionManager)
+Acceptor::Acceptor(std::weak_ptr<Proactor> proactor,
+                   std::weak_ptr<ConnectionManager> connectionManager)
     : m_logger(log::LogManager::instance().getDefaultLogger())
-    , m_acceptor(std::make_shared<boost::asio::ip::tcp::acceptor>(*proactor->getImpl()))
+    , m_acceptor(std::make_shared<boost::asio::ip::tcp::acceptor>(*proactor.lock()->getImpl()))
     , m_connectionManager(connectionManager)
     , m_stopped(false)
     , m_stopMutex()
@@ -60,7 +60,7 @@ void Acceptor::accept()
 void Acceptor::onAccept(const boost::system::error_code &err, boost::asio::ip::tcp::socket socket)
 {
     if (!err) {
-        auto connection = m_connectionManager->createConnection(std::move(socket));
+        auto connection = m_connectionManager.lock()->createConnection(std::move(socket));
         connection->start();
     }
     else {

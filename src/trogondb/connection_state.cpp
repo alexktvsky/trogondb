@@ -157,7 +157,7 @@ void ReadingArgumentState::doRead(std::shared_ptr<boost::asio::streambuf> buffer
     }
 
     if (m_connection.lock()->m_context.args.size() == m_connection.lock()->m_context.expectedArgsCount - 1) {
-        auto executor = m_connection.lock()->getConnectionManager().lock()->getServer().lock()->getCommandExecutor();
+        auto executor = m_connection.lock()->getConnectionManager().lock()->getServer().lock()->getCommandExecutor().lock();
         m_logger->debug("Executing command '{}' with {} args", m_connection.lock()->m_context.cmd, m_connection.lock()->m_context.args.size());
 
         CommandResult result = executor->execute(m_connection.lock()->m_context.cmd, m_connection.lock()->m_context.args);

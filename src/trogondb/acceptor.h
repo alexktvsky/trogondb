@@ -16,7 +16,7 @@ class ConnectionManager;
 
 class Acceptor : public std::enable_shared_from_this<Acceptor> {
 public:
-    explicit Acceptor(std::shared_ptr<Proactor> proactor, std::shared_ptr<ConnectionManager> connectionManager);
+    explicit Acceptor(std::weak_ptr<Proactor> proactor, std::weak_ptr<ConnectionManager> connectionManager);
 
     void addListener(uint16_t port);
 
@@ -35,7 +35,7 @@ private:
 
     std::shared_ptr<log::Logger> m_logger;
     std::shared_ptr<boost::asio::ip::tcp::acceptor> m_acceptor;
-    std::shared_ptr<ConnectionManager> m_connectionManager;
+    std::weak_ptr<ConnectionManager> m_connectionManager;
     std::atomic<bool> m_stopped;
     std::mutex m_stopMutex;
 };
