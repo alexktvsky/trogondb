@@ -78,6 +78,8 @@ int main(int argc, char **argv)
         trogondb::log::LogManager::instance().setDefaultLogger(server->getLogger());
 
         server->start();
+
+        proactor->run();
     }
     catch (const trogondb::CommandLineException &e) {
         std::fprintf(stderr, "%s\n\n", e.what());

@@ -12,7 +12,7 @@ class Connection;
 
 class IConnectionState : public std::enable_shared_from_this<IConnectionState> {
 public:
-    IConnectionState(std::shared_ptr<Connection> connection);
+    IConnectionState(std::weak_ptr<Connection> connection);
 
     virtual void doRead(std::shared_ptr<boost::asio::streambuf> buffer, size_t bytesTransferred);
 
@@ -23,8 +23,8 @@ public:
     virtual ~IConnectionState() = default;
 
 protected:
-    std::shared_ptr<Connection> m_connection;
     std::shared_ptr<log::Logger> m_logger;
+    std::weak_ptr<Connection> m_connection;
 };
 
 class ReadingHeaderState : public IConnectionState {
@@ -50,7 +50,7 @@ public:
 
 class ErrorState : public IConnectionState {
 public:
-    ErrorState(std::shared_ptr<Connection> connection, const std::string &output);
+    ErrorState(std::weak_ptr<Connection> connection, const std::string &output);
 
     void doWrite(std::shared_ptr<boost::asio::streambuf> buffer, size_t bytesTransferred) override;
 
@@ -60,7 +60,7 @@ private:
 
 class WritingResponseState : public IConnectionState {
 public:
-    WritingResponseState(std::shared_ptr<Connection> connection, const std::string &output);
+    WritingResponseState(std::weak_ptr<Connection> connection, const std::string &output);
 
     void doWrite(std::shared_ptr<boost::asio::streambuf> buffer, size_t bytesTransferred) override;
 

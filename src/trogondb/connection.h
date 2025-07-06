@@ -54,7 +54,7 @@ private:
     boost::asio::ip::tcp::socket m_socket;
     std::shared_ptr<boost::asio::streambuf> m_readBuffer;
     std::shared_ptr<boost::asio::streambuf> m_writeBuffer;
-    // boost::asio::steady_timer m_timer;
+    // boost::asio::steady_timer m_timer; // TODO
     std::atomic<bool> m_cancelled;
     std::mutex m_closeMutex;
 

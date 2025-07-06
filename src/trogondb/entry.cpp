@@ -2,7 +2,7 @@
 
 namespace trogondb {
 
-Entry::Entry(const std::string &value, const std::optional<std::chrono::steady_clock::time_point> &expiry)
+Entry::Entry(const std::string &value, const std::optional<TimePoint> &expiry)
     : m_value(value)
     , m_expiry(expiry)
 {}

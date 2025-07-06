@@ -36,10 +36,10 @@ void Connection::close()
     if (m_cancelled.load()) {
         return;
     }
+    m_cancelled.store(true);
 
     m_logger->info("Closing connection {}", m_socket.remote_endpoint().address().to_string());
     m_socket.cancel();
-    m_cancelled.store(true);
 
     m_connectionManager.lock()->removeConnection(shared_from_this());
 }

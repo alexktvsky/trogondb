@@ -14,7 +14,7 @@ namespace trogondb {
 
 class ConnectionManager;
 
-class Acceptor {
+class Acceptor : public std::enable_shared_from_this<Acceptor> {
 public:
     explicit Acceptor(std::shared_ptr<Proactor> proactor, std::shared_ptr<ConnectionManager> connectionManager);
 

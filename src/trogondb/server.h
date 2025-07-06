@@ -22,7 +22,7 @@ public:
 
     std::shared_ptr<log::Logger> getLogger() const;
 
-    std::weak_ptr<CommandExecutor> getCommandExecutor() const;
+    std::shared_ptr<CommandExecutor> getCommandExecutor() const;
 
     void start();
 
@@ -41,7 +41,7 @@ private:
     std::shared_ptr<log::Logger> m_logger;
     std::shared_ptr<Proactor> m_proactor;
     std::shared_ptr<ConnectionManager> m_connectionManager;
-    std::shared_ptr<Acceptor> m_accepter;
+    std::shared_ptr<Acceptor> m_acceptor;
     std::shared_ptr<KeyValueStore> m_store;
     std::shared_ptr<CommandExecutor> m_commandExecutor;
     bool m_isInitialized;

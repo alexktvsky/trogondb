@@ -40,9 +40,10 @@ void Acceptor::stop()
         return;
     }
 
-    // TODO
-
     m_stopped.store(true);
+
+    m_acceptor->cancel();
+    m_acceptor->close();
 }
 
 bool Acceptor::isStopped() const
@@ -53,7 +54,7 @@ bool Acceptor::isStopped() const
 void Acceptor::accept()
 {
     m_acceptor->async_accept(
-        std::bind(&Acceptor::onAccept, this, std::placeholders::_1, std::placeholders::_2));
+        std::bind(&Acceptor::onAccept, shared_from_this(), std::placeholders::_1, std::placeholders::_2));
 }
 
 void Acceptor::onAccept(const boost::system::error_code &err, boost::asio::ip::tcp::socket socket)

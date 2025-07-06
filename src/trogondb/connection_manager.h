@@ -1,7 +1,8 @@
 #pragma once
 
 #include <memory>
-#include <list>
+#include <unordered_set>
+#include <mutex>
 
 #include "trogondb/connection.h"
 #include "trogondb/server.h"
@@ -24,7 +25,8 @@ public:
 
 private:
     std::weak_ptr<Server> m_server;
-    std::list<std::shared_ptr<Connection>> m_connections;
+    std::unordered_set<std::shared_ptr<Connection>> m_connections;
+    std::mutex m_mutex;
 };
 
 } // namespace trogondb

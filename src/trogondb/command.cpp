@@ -1,7 +1,7 @@
 #include "trogondb/command.h"
 
-#include <optional>
 #include <chrono>
+#include <optional>
 #include <fmt/format.h>
 
 #include "trogondb/utils.h"
@@ -54,7 +54,7 @@ CommandResult SetCommand::execute(const std::vector<std::string> &args)
         return CommandResult::error("Invalid number of arguments"); // TODO
     }
 
-    std::optional<std::chrono::steady_clock::time_point> expiryTime;
+    std::optional<KeyValueStore::TimePoint> expiryTime;
 
     if (args.size() == 4 && stringToLower(args[2]) == "px") {
         auto expiryMs = stringToNumber<int64_t>(args[3]);

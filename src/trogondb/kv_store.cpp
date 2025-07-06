@@ -2,7 +2,7 @@
 
 namespace trogondb {
 
-void KeyValueStore::setValue(const std::string &key, const std::string &value, std::optional<std::chrono::steady_clock::time_point> expiry)
+void KeyValueStore::setValue(const std::string &key, const std::string &value, std::optional<TimePoint> expiry)
 {
     m_data[key] = Entry(value, expiry);
 }

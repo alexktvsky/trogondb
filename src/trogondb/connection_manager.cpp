@@ -14,17 +14,16 @@ std::weak_ptr<Server> ConnectionManager::getServer() const
 
 std::shared_ptr<Connection> ConnectionManager::createConnection(boost::asio::ip::tcp::socket socket)
 {
+    std::lock_guard<std::mutex> lock(m_mutex);
     auto connection = std::make_shared<Connection>(shared_from_this(), std::move(socket));
-    m_connections.push_back(connection);
+    m_connections.insert(connection);
     return connection;
 }
 
 void ConnectionManager::removeConnection(const std::shared_ptr<Connection> &connection)
 {
-    if (!connection->isClosed()) {
-        connection->close();
-    }
-    m_connections.remove(connection);
+    std::lock_guard<std::mutex> lock(m_mutex);
+    m_connections.erase(connection);
 }
 
 } // namespace trogondb
