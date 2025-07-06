@@ -44,7 +44,11 @@ private:
     std::shared_ptr<Acceptor> m_acceptor;
     std::shared_ptr<KeyValueStore> m_store;
     std::shared_ptr<CommandExecutor> m_commandExecutor;
-    bool m_isInitialized;
+
+    std::atomic<bool> m_isInitialized;
+    std::mutex m_initMutex;
+    std::atomic<bool> m_stopped;
+    std::mutex m_stopMutex;
 };
 
 } // namespace trogondb

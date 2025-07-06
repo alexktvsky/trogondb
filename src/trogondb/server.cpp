@@ -24,6 +24,9 @@ Server::Server(std::shared_ptr<Proactor> proactor, std::shared_ptr<Config> &&con
     , m_store(std::make_shared<KeyValueStore>())
     , m_commandExecutor(std::make_shared<CommandExecutor>(m_store))
     , m_isInitialized(false)
+    , m_initMutex()
+    , m_stopped(false)
+    , m_stopMutex()
 {}
 
 std::shared_ptr<log::Logger> Server::createLogger(const std::shared_ptr<Config> &config)
@@ -88,6 +91,13 @@ void Server::initializeProcess(const std::shared_ptr<Config> &config)
 
 void Server::initialize()
 {
+    std::lock_guard<std::mutex> lock(m_initMutex);
+
+    if (m_isInitialized) {
+        return;
+    }
+    m_isInitialized.store(true);
+
     m_connectionManager = std::make_shared<ConnectionManager>(shared_from_this());
     m_acceptor = std::make_shared<Acceptor>(m_proactor, m_connectionManager);
 
@@ -110,18 +120,27 @@ std::shared_ptr<CommandExecutor> Server::getCommandExecutor() const
 
 void Server::start()
 {
-    if (!m_isInitialized) {
-        initialize();
-        m_isInitialized = true;
-    }
+    initialize();
 
     m_logger->info("Starting server with pid {}", os::Process::getPid());
 }
 
 void Server::stop()
 {
-    // TODO
-    m_acceptor->stop();
+    std::lock_guard<std::mutex> lock(m_stopMutex);
+    if (m_stopped.exchange(true)) {
+        return;
+    }
+
+    m_logger->info("Stopping server...");
+
+    if (m_acceptor) {
+        m_acceptor->stop();
+    }
+
+    m_connectionManager->closeAll();
+
+    m_logger->info("Server stopped");
 }
 
 void Server::restart()

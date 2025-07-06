@@ -23,6 +23,8 @@ public:
 
     void removeConnection(const std::shared_ptr<Connection> &connection);
 
+    void closeAll();
+
 private:
     std::weak_ptr<Server> m_server;
     std::unordered_set<std::shared_ptr<Connection>> m_connections;

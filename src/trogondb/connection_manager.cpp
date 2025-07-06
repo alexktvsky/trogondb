@@ -23,7 +23,24 @@ std::shared_ptr<Connection> ConnectionManager::createConnection(boost::asio::ip:
 void ConnectionManager::removeConnection(const std::shared_ptr<Connection> &connection)
 {
     std::lock_guard<std::mutex> lock(m_mutex);
+
+    if (!connection->isClosed()) {
+        connection->close();
+    }
     m_connections.erase(connection);
+}
+
+void ConnectionManager::closeAll()
+{
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    for (auto &connection : m_connections) {
+        if (connection) {
+            connection->close();
+        }
+    }
+
+    m_connections.clear();
 }
 
 } // namespace trogondb
