@@ -24,6 +24,11 @@ void IConnectionState::doTimeout()
 
 void ReadingHeaderState::doRead(std::shared_ptr<boost::asio::streambuf> buffer, size_t bytesTransferred)
 {
+    auto connection = m_connection.lock();
+    if (!connection) {
+        throw Exception("Failed to acquire Connection: weak_ptr expired");
+    }
+
     buffer->commit(bytesTransferred);
 
     std::string data(boost::asio::buffers_begin(buffer->data()),
@@ -31,7 +36,7 @@ void ReadingHeaderState::doRead(std::shared_ptr<boost::asio::streambuf> buffer, 
 
     size_t pos = data.find("\r\n");
     if (pos == std::string::npos) {
-        m_connection.lock()->doRead();
+        connection->doRead();
         return;
     }
 
@@ -39,8 +44,8 @@ void ReadingHeaderState::doRead(std::shared_ptr<boost::asio::streambuf> buffer, 
 
     if (data[0] != '*') {
         m_logger->error("Failed ReadingHeaderState::doRead(): expected '*', got '{}'", data[0]);
-        m_connection.lock()->changeState(std::make_shared<ErrorState>(m_connection.lock(), fmt::format("-ERR Protocol error: expected '*', got '{}'", data[0])));
-        m_connection.lock()->m_state->doWrite(m_connection.lock()->m_writeBuffer, 0);
+        connection->changeState(std::make_shared<ErrorState>(connection, fmt::format("-ERR Protocol error: expected '*', got '{}'", data[0])));
+        connection->m_state->doWrite(connection->m_writeBuffer, 0);
         return;
     }
 
@@ -48,28 +53,33 @@ void ReadingHeaderState::doRead(std::shared_ptr<boost::asio::streambuf> buffer, 
     auto expectedArgsCount = stringToNumber<uint32_t>(expectedArgsStr);
     if (!expectedArgsCount) {
         m_logger->error("Failed to ReadingHeaderState::doRead(): invalid multibulk length");
-        m_connection.lock()->changeState(std::make_shared<ErrorState>(m_connection.lock(), "-ERR Protocol error: invalid multibulk length"));
-        m_connection.lock()->m_state->doWrite(m_connection.lock()->m_writeBuffer, 0);
+        connection->changeState(std::make_shared<ErrorState>(connection, "-ERR Protocol error: invalid multibulk length"));
+        connection->m_state->doWrite(connection->m_writeBuffer, 0);
         return;
     }
 
-    m_connection.lock()->m_context.expectedArgsCount = expectedArgsCount.value();
-    m_logger->debug("ReadingHeaderState::doRead() expectedArgsCount: {}", m_connection.lock()->m_context.expectedArgsCount);
+    connection->m_context.expectedArgsCount = expectedArgsCount.value();
+    m_logger->debug("ReadingHeaderState::doRead() expectedArgsCount: {}", connection->m_context.expectedArgsCount);
 
     buffer->consume(bytesConsumed);
 
-    m_connection.lock()->changeState(std::make_shared<ReadingArgumentLengthState>(m_connection.lock()));
+    connection->changeState(std::make_shared<ReadingArgumentLengthState>(connection));
 
     if (bytesTransferred > bytesConsumed) {
-        m_connection.lock()->m_state->doRead(buffer, bytesTransferred - bytesConsumed);
+        connection->m_state->doRead(buffer, bytesTransferred - bytesConsumed);
         return;
     }
 
-    m_connection.lock()->doRead();
+    connection->doRead();
 }
 
 void ReadingArgumentLengthState::doRead(std::shared_ptr<boost::asio::streambuf> buffer, size_t bytesTransferred)
 {
+    auto connection = m_connection.lock();
+    if (!connection) {
+        throw Exception("Failed to acquire Connection: weak_ptr expired");
+    }
+
     buffer->commit(bytesTransferred);
 
     std::string data(boost::asio::buffers_begin(buffer->data()),
@@ -77,7 +87,7 @@ void ReadingArgumentLengthState::doRead(std::shared_ptr<boost::asio::streambuf> 
 
     size_t pos = data.find("\r\n");
     if (pos == std::string::npos) {
-        m_connection.lock()->doRead();
+        connection->doRead();
         return;
     }
 
@@ -85,8 +95,8 @@ void ReadingArgumentLengthState::doRead(std::shared_ptr<boost::asio::streambuf> 
 
     if (data[0] != '$') {
         m_logger->error("Failed ReadingArgumentLengthState::doRead(): expected '$', got '{}'", data[0]);
-        m_connection.lock()->changeState(std::make_shared<ErrorState>(m_connection.lock(), fmt::format("-ERR Protocol error: expected '$', got '{}'", data[0])));
-        m_connection.lock()->m_state->doWrite(m_connection.lock()->m_writeBuffer, 0);
+        connection->changeState(std::make_shared<ErrorState>(connection, fmt::format("-ERR Protocol error: expected '$', got '{}'", data[0])));
+        connection->m_state->doWrite(connection->m_writeBuffer, 0);
         return;
     }
 
@@ -94,28 +104,33 @@ void ReadingArgumentLengthState::doRead(std::shared_ptr<boost::asio::streambuf> 
     auto bulkLength = stringToNumber<uint32_t>(bulkLengthStr);
     if (!bulkLength) {
         m_logger->error("Failed to ReadingArgumentLengthState::doRead(): invalid bulk length");
-        m_connection.lock()->changeState(std::make_shared<ErrorState>(m_connection.lock(), "-ERR Protocol error: invalid bulk length"));
-        m_connection.lock()->m_state->doWrite(m_connection.lock()->m_writeBuffer, 0);
+        connection->changeState(std::make_shared<ErrorState>(connection, "-ERR Protocol error: invalid bulk length"));
+        connection->m_state->doWrite(connection->m_writeBuffer, 0);
         return;
     }
 
-    m_connection.lock()->m_context.expectedNextBulkLength = bulkLength.value();
-    m_logger->debug("ArgumentLengthStateState::doRead() expectedNextBulkLength: {}", m_connection.lock()->m_context.expectedNextBulkLength);
+    connection->m_context.expectedNextBulkLength = bulkLength.value();
+    m_logger->debug("ArgumentLengthStateState::doRead() expectedNextBulkLength: {}", connection->m_context.expectedNextBulkLength);
 
     buffer->consume(bytesConsumed);
 
-    m_connection.lock()->changeState(std::make_shared<ReadingArgumentState>(m_connection.lock()));
+    connection->changeState(std::make_shared<ReadingArgumentState>(connection));
 
     if (bytesTransferred > bytesConsumed) {
-        m_connection.lock()->m_state->doRead(buffer, bytesTransferred - bytesConsumed);
+        connection->m_state->doRead(buffer, bytesTransferred - bytesConsumed);
         return;
     }
 
-    m_connection.lock()->doRead();
+    connection->doRead();
 }
 
 void ReadingArgumentState::doRead(std::shared_ptr<boost::asio::streambuf> buffer, size_t bytesTransferred)
 {
+    auto connection = m_connection.lock();
+    if (!connection) {
+        throw Exception("Failed to acquire Connection: weak_ptr expired");
+    }
+
     buffer->commit(bytesTransferred);
 
     std::string data(boost::asio::buffers_begin(buffer->data()),
@@ -123,7 +138,7 @@ void ReadingArgumentState::doRead(std::shared_ptr<boost::asio::streambuf> buffer
 
     size_t pos = data.find("\r\n");
     if (pos == std::string::npos) {
-        m_connection.lock()->doRead();
+        connection->doRead();
         return;
     }
 
@@ -132,46 +147,47 @@ void ReadingArgumentState::doRead(std::shared_ptr<boost::asio::streambuf> buffer
     std::string bulk = data.substr(0, pos);
     m_logger->debug("ReadingArgumentState::doRead() bulk: {}", bulk);
 
-    if (bulk.length() != m_connection.lock()->m_context.expectedNextBulkLength) {
-        m_logger->error("Failed to ReadingArgumentState::doRead(): length of '{}' ({}) does not match expected length ({})", bulk, bulk.size(), m_connection.lock()->m_context.expectedNextBulkLength);
-        m_connection.lock()->changeState(std::make_shared<ErrorState>(m_connection.lock(), fmt::format("-ERR Protocol error: length of '{}' ({}) does not match expected length ({})", bulk, bulk.size(), m_connection.lock()->m_context.expectedNextBulkLength)));
-        m_connection.lock()->m_state->doWrite(m_connection.lock()->m_writeBuffer, 0);
+    if (bulk.length() != connection->m_context.expectedNextBulkLength) {
+        m_logger->error("Failed to ReadingArgumentState::doRead(): length of '{}' ({}) does not match expected length ({})", bulk, bulk.size(), connection->m_context.expectedNextBulkLength);
+        connection->changeState(std::make_shared<ErrorState>(connection, fmt::format("-ERR Protocol error: length of '{}' ({}) does not match expected length ({})", bulk, bulk.size(), connection->m_context.expectedNextBulkLength)));
+        connection->m_state->doWrite(connection->m_writeBuffer, 0);
         return;
     }
 
     // First bulk is a name of command
-    if (m_connection.lock()->m_context.cmd.length() == 0) {
-        m_connection.lock()->m_context.cmd = stringToLower(bulk);
+    if (connection->m_context.cmd.length() == 0) {
+        connection->m_context.cmd = stringToLower(bulk);
     }
     else {
-        m_connection.lock()->m_context.args.push_back(bulk);
+        connection->m_context.args.push_back(bulk);
     }
 
     buffer->consume(bytesConsumed);
 
-    m_connection.lock()->changeState(std::make_shared<ReadingArgumentLengthState>(m_connection.lock()));
+    connection->changeState(std::make_shared<ReadingArgumentLengthState>(connection));
 
     if (bytesTransferred > bytesConsumed) {
-        m_connection.lock()->m_state->doRead(buffer, bytesTransferred - bytesConsumed);
+        connection->m_state->doRead(buffer, bytesTransferred - bytesConsumed);
         return;
     }
 
-    if (m_connection.lock()->m_context.args.size() == m_connection.lock()->m_context.expectedArgsCount - 1) {
-        auto executor = m_connection.lock()->getConnectionManager().lock()->getServer().lock()->getCommandExecutor().lock();
-        m_logger->debug("Executing command '{}' with {} args", m_connection.lock()->m_context.cmd, m_connection.lock()->m_context.args.size());
+    if (connection->m_context.args.size() == connection->m_context.expectedArgsCount - 1) {
+        auto connectionManager = connection->getConnectionManager().lock();
+        auto server = connectionManager->getServer().lock();
+        auto executor = server->getCommandExecutor().lock();
 
-        CommandResult result = executor->execute(m_connection.lock()->m_context.cmd, m_connection.lock()->m_context.args);
+        CommandResult result = executor->execute(connection->m_context.cmd, connection->m_context.args);
         if (result.ok) {
-            m_connection.lock()->changeState(std::make_shared<WritingResponseState>(m_connection.lock(), result.output));
-            m_connection.lock()->m_state->doWrite(m_connection.lock()->m_writeBuffer, 0);
+            connection->changeState(std::make_shared<WritingResponseState>(connection, result.output));
+            connection->m_state->doWrite(connection->m_writeBuffer, 0);
         }
         else {
-            m_connection.lock()->changeState(std::make_shared<ErrorState>(m_connection.lock(), fmt::format("-ERR {}", result.output)));
-            m_connection.lock()->m_state->doWrite(m_connection.lock()->m_writeBuffer, 0);
+            connection->changeState(std::make_shared<ErrorState>(connection, fmt::format("-ERR {}", result.output)));
+            connection->m_state->doWrite(connection->m_writeBuffer, 0);
         }
     }
     else {
-        m_connection.lock()->doRead();
+        connection->doRead();
     }
 }
 
@@ -186,14 +202,18 @@ void ErrorState::doWrite(std::shared_ptr<boost::asio::streambuf> buffer, size_t 
 
     m_logger->debug("ErrorState::doWrite(), output: {}", m_output);
 
+    auto connection = m_connection.lock();
+    if (!connection) {
+        throw Exception("Failed to acquire Connection: weak_ptr expired");
+    }
+
     if (bytesTransferred > 0) {
         m_output.erase(0, bytesTransferred);
     }
 
     if (m_output.size() == 0) {
-        m_connection.lock()->close();
-        m_connection.lock()->changeState(std::make_shared<ClosedState>(m_connection.lock()));
-        m_connection.lock()->getConnectionManager().lock()->removeConnection(m_connection.lock());
+        connection->changeState(std::make_shared<ClosedState>(connection));
+        connection->close();
         return;
     }
 
@@ -203,7 +223,7 @@ void ErrorState::doWrite(std::shared_ptr<boost::asio::streambuf> buffer, size_t 
 
     buffer->commit(m_output.size());
 
-    m_connection.lock()->doWrite();
+    connection->doWrite();
 }
 
 WritingResponseState::WritingResponseState(std::weak_ptr<Connection> connection, const std::string &output)
@@ -215,14 +235,18 @@ void WritingResponseState::doWrite(std::shared_ptr<boost::asio::streambuf> buffe
 {
     m_logger->debug("WritingResponseState::doWrite() bytesTransferred: {}", bytesTransferred);
 
+    auto connection = m_connection.lock();
+    if (!connection) {
+        throw Exception("Failed to acquire Connection: weak_ptr expired");
+    }
+
     if (bytesTransferred > 0) {
         m_output.erase(0, bytesTransferred);
     }
 
     if (m_output.size() == 0) {
-        m_connection.lock()->close();
-        m_connection.lock()->changeState(std::make_shared<ClosedState>(m_connection.lock()));
-        m_connection.lock()->getConnectionManager().lock()->removeConnection(m_connection.lock());
+        connection->changeState(std::make_shared<ClosedState>(connection));
+        connection->close();
         return;
     }
 
@@ -232,7 +256,7 @@ void WritingResponseState::doWrite(std::shared_ptr<boost::asio::streambuf> buffe
 
     buffer->commit(m_output.size());
 
-    m_connection.lock()->doWrite();
+    connection->doWrite();
 }
 
 } // namespace trogondb

@@ -9,13 +9,14 @@ namespace trogondb {
 
 constexpr size_t READ_BUFFER_SIZE = 1024;
 
-Connection::Connection(std::weak_ptr<ConnectionManager>connectionManager, boost::asio::ip::tcp::socket socket)
+Connection::Connection(boost::asio::ip::tcp::socket socket, std::weak_ptr<ConnectionManager> owner)
     : m_logger(log::LogManager::instance().getDefaultLogger())
-    , m_connectionManager(connectionManager)
-    , m_state(nullptr)
     , m_socket(std::move(socket))
+    , m_connectionManager(owner)
     , m_readBuffer(std::make_shared<boost::asio::streambuf>())
     , m_writeBuffer(std::make_shared<boost::asio::streambuf>())
+    , m_closed(false)
+    , m_state(nullptr)
 {}
 
 void Connection::start()
@@ -29,18 +30,22 @@ void Connection::start()
 
 void Connection::close()
 {
-    if (!m_socket.is_open()) {
+    if (m_closed.exchange(true, std::memory_order_acq_rel)) {
         return;
     }
 
     m_logger->info("Closing connection {}", m_socket.remote_endpoint().address().to_string());
 
     m_socket.cancel();
-}
+    m_socket.close();
 
-bool Connection::isClosed() const
-{
-    return !m_socket.is_open();
+    auto connectionManager = m_connectionManager.lock();
+    if (!connectionManager) {
+        throw Exception("Failed to acquire ConnectionManager: weak_ptr expired");
+    }
+
+    connectionManager->remove(shared_from_this());
+
 }
 
 std::weak_ptr<ConnectionManager> Connection::getConnectionManager() const
@@ -55,10 +60,6 @@ void Connection::changeState(std::shared_ptr<IConnectionState> state)
 
 void Connection::doRead()
 {
-    if (!m_socket.is_open()) {
-        return;
-    }
-
     auto buffer = m_readBuffer->prepare(READ_BUFFER_SIZE);
 
     m_socket.async_read_some(buffer, std::bind(&Connection::onReadDone, shared_from_this(), std::placeholders::_1, std::placeholders::_2));

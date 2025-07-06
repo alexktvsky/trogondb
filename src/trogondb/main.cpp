@@ -70,15 +70,12 @@ int main(int argc, char **argv)
         }
 
         auto config = trogondb::ConfigParser::parseFile(configFilename);
-
         auto proactor = std::make_shared<trogondb::Proactor>();
-
         auto server = std::make_shared<trogondb::Server>(proactor, std::move(config));
 
         trogondb::log::LogManager::instance().setDefaultLogger(server->getLogger());
 
         server->start();
-
         proactor->run();
     }
     catch (const trogondb::CommandLineException &e) {

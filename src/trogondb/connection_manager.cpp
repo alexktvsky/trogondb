@@ -12,41 +12,37 @@ std::weak_ptr<Server> ConnectionManager::getServer() const
     return m_server;
 }
 
-std::shared_ptr<Connection> ConnectionManager::createConnection(boost::asio::ip::tcp::socket socket)
+std::shared_ptr<Connection> ConnectionManager::create(boost::asio::ip::tcp::socket socket)
 {
-    std::lock_guard<std::mutex> lock(m_mutex);
-    auto connection = std::shared_ptr<Connection>(new Connection(shared_from_this(), std::move(socket)));
-    m_connections.insert(connection);
+    auto connection = std::shared_ptr<Connection>(new Connection(std::move(socket), shared_from_this()));
+
+    {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        m_connections.insert(connection);
+    }
+
     return connection;
 }
 
-void ConnectionManager::removeConnection(const std::shared_ptr<Connection> &connection)
+void ConnectionManager::remove(const std::shared_ptr<Connection> &connection)
 {
     std::lock_guard<std::mutex> lock(m_mutex);
 
-    auto iter = m_connections.find(connection);
-    if (iter == m_connections.end()) {
-        return;
-    }
-
-    if (!connection->isClosed()) {
-        connection->close();
-    }
-
-    m_connections.erase(iter);
+    m_connections.erase(connection);
 }
 
-void ConnectionManager::removeAll()
+void ConnectionManager::closeAll()
 {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::unordered_set<std::shared_ptr<Connection>> snapshot;
 
-    for (auto &connection : m_connections) {
-        if (connection) {
-            connection->close();
-        }
+    {
+        std::lock_guard lk(m_mutex);
+        snapshot.swap(m_connections);
     }
 
-    m_connections.clear();
+    for (auto &connection : snapshot) {
+        connection->close();
+    }
 }
 
 } // namespace trogondb

@@ -19,11 +19,11 @@ public:
 
     std::weak_ptr<Server> getServer() const;
 
-    std::shared_ptr<Connection> createConnection(boost::asio::ip::tcp::socket socket);
+    std::shared_ptr<Connection> create(boost::asio::ip::tcp::socket socket);
 
-    void removeConnection(const std::shared_ptr<Connection> &connection);
+    void remove(const std::shared_ptr<Connection> &connection);
 
-    void removeAll();
+    void closeAll();
 
 private:
     std::weak_ptr<Server> m_server;

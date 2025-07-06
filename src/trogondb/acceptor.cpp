@@ -58,7 +58,8 @@ void Acceptor::accept()
 void Acceptor::onAccept(const boost::system::error_code &err, boost::asio::ip::tcp::socket socket)
 {
     if (!err) {
-        auto connection = m_connectionManager.lock()->createConnection(std::move(socket));
+        auto connectionManager = m_connectionManager.lock();
+        auto connection = connectionManager->create(std::move(socket));
         connection->start();
     }
     else {

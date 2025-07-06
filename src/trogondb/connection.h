@@ -5,7 +5,6 @@
 #include <string>
 #include <memory>
 #include <atomic>
-#include <mutex>
 #include <boost/asio.hpp>
 
 #include "trogondb/log/logger.h"
@@ -32,12 +31,10 @@ public:
 
     void close();
 
-    bool isClosed() const;
-
     std::weak_ptr<ConnectionManager> getConnectionManager() const;
 
 private:
-    Connection(std::weak_ptr<ConnectionManager> connectionManager, boost::asio::ip::tcp::socket socket);
+    Connection(boost::asio::ip::tcp::socket socket, std::weak_ptr<ConnectionManager> owner);
 
     // ~Connection() = default;
 
@@ -52,12 +49,14 @@ private:
     void onWriteDone(const boost::system::error_code &err, size_t bytesTransferred);
 
     std::shared_ptr<log::Logger> m_logger;
-    std::weak_ptr<ConnectionManager> m_connectionManager;
-    std::shared_ptr<IConnectionState> m_state;
     boost::asio::ip::tcp::socket m_socket;
+    std::weak_ptr<ConnectionManager> m_connectionManager;
     std::shared_ptr<boost::asio::streambuf> m_readBuffer;
     std::shared_ptr<boost::asio::streambuf> m_writeBuffer;
     // boost::asio::steady_timer m_timer; // TODO
+    std::atomic<bool> m_closed;
+
+    std::shared_ptr<IConnectionState> m_state;
 
     struct ParseContext {
         uint32_t expectedArgsCount;

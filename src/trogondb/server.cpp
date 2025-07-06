@@ -138,7 +138,7 @@ void Server::stop()
         m_acceptor->stop();
     }
 
-    m_connectionManager->removeAll();
+    m_connectionManager->closeAll();
 
     m_logger->info("Server stopped");
 }
