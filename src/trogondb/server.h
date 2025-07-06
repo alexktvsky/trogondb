@@ -29,6 +29,8 @@ public:
 
     void restart();
 
+    bool isRunning() const;
+
 private:
     static std::shared_ptr<log::Logger> createLogger(const std::shared_ptr<Config> &config);
 
@@ -46,8 +48,8 @@ private:
 
     std::atomic<bool> m_initialized;
     std::mutex m_initMutex;
-    std::atomic<bool> m_stopped;
-    std::mutex m_stopMutex;
+    std::atomic<bool> m_running;
+    std::mutex m_mutex;
 };
 
 } // namespace trogondb

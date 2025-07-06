@@ -24,10 +24,17 @@ void ConnectionManager::removeConnection(const std::shared_ptr<Connection> &conn
 {
     std::lock_guard<std::mutex> lock(m_mutex);
 
-    if (!connection->isClosed()) {
-        connection->close();
+    auto iter = m_connections.find(connection);
+    if (iter == m_connections.end()) {
+        return;
     }
-    m_connections.erase(connection);
+
+    std::shared_ptr<Connection> tmp = std::move(*iter);
+    m_connections.erase(iter);
+
+    if (tmp->isClosed()) {
+        tmp->close();
+    }
 }
 
 void ConnectionManager::closeAll()

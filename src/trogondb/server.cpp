@@ -25,8 +25,8 @@ Server::Server(std::shared_ptr<Proactor> proactor, std::shared_ptr<Config> &&con
     , m_commandExecutor(std::make_shared<CommandExecutor>(m_store))
     , m_initialized(false)
     , m_initMutex()
-    , m_stopped(false)
-    , m_stopMutex()
+    , m_running(false)
+    , m_mutex()
 {}
 
 std::shared_ptr<log::Logger> Server::createLogger(const std::shared_ptr<Config> &config)
@@ -103,7 +103,6 @@ void Server::initialize()
 
     m_acceptor->addListener(m_config->port);
     m_acceptor->setNonBlocking(true);
-    m_acceptor->run();
 
     initializeProcess(m_config);
 }
@@ -120,15 +119,24 @@ std::weak_ptr<CommandExecutor> Server::getCommandExecutor() const
 
 void Server::start()
 {
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    if (m_running.load(std::memory_order_acquire)) {
+        return;
+    }
+
     initialize();
+
+    m_acceptor->run();
 
     m_logger->info("Starting server with pid {}", os::Process::getPid());
 }
 
 void Server::stop()
 {
-    std::lock_guard<std::mutex> lock(m_stopMutex);
-    if (m_stopped.exchange(true)) {
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    if (!m_running.load(std::memory_order_acquire)) {
         return;
     }
 
@@ -146,6 +154,11 @@ void Server::stop()
 void Server::restart()
 {
     // TODO
+}
+
+bool Server::isRunning() const
+{
+    return m_running.load();
 }
 
 } // namespace trogondb
