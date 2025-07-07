@@ -22,11 +22,16 @@ class Handler {
     friend class Logger;
 public:
     log::Level getLevel() const;
+
     void setLevel(log::Level level);
+
     void setPattern(const std::string &pattern);
+
     void flush();
+
 protected:
     Handler(const std::shared_ptr<HandlerImpl> &impl);
+
 private:
     std::shared_ptr<HandlerImpl> m_impl;
 };

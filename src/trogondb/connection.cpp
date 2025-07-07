@@ -45,7 +45,6 @@ void Connection::close()
     }
 
     connectionManager->remove(shared_from_this());
-
 }
 
 std::weak_ptr<ConnectionManager> Connection::getConnectionManager() const
