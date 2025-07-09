@@ -5,13 +5,14 @@
 #include <cctype>
 #include <optional>
 #include <charconv>
+#include <string_view>
 
 namespace trogondb {
 
 std::string stringToLower(const std::string &s);
 
 template <typename T>
-std::optional<T> stringToNumber(const std::string &s)
+std::optional<T> stringToNumber(const std::string_view &s)
 {
     T value;
 

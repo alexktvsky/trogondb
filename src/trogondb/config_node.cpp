@@ -101,7 +101,7 @@ int Node::getColumnInFile() const
     return columnNumber != -1 ? columnNumber : m_node.Mark().column + 1;
 }
 
-std::string Node::getLastElementInNodePath(const std::string &path)
+std::string_view Node::getLastElementInNodePath(std::string_view path)
 {
     size_t lastDotPos = path.find_last_of('.');
 
@@ -114,7 +114,7 @@ std::string Node::getLastElementInNodePath(const std::string &path)
 
 int Node::getRealColumnInFile() const
 {
-    std::string key = getLastElementInNodePath(getFullPath());
+    std::string_view key = getLastElementInNodePath(getFullPath());
     int lineNumber = getLineInFile() - 1;
     int columnNumber = getColumnInFile() - 1;
 

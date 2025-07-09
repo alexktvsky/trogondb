@@ -31,8 +31,7 @@ void ReadingHeaderState::doRead(std::shared_ptr<boost::asio::streambuf> buffer, 
 
     buffer->commit(bytesTransferred);
 
-    std::string data(boost::asio::buffers_begin(buffer->data()),
-                     boost::asio::buffers_begin(buffer->data()) + bytesTransferred);
+    std::string_view data(static_cast<const char*>(buffer->data().data()), bytesTransferred);
 
     size_t pos = data.find("\r\n");
     if (pos == std::string::npos) {
@@ -49,7 +48,7 @@ void ReadingHeaderState::doRead(std::shared_ptr<boost::asio::streambuf> buffer, 
         return;
     }
 
-    std::string expectedArgsStr = data.substr(1, pos); // skip '*'
+    std::string_view expectedArgsStr(data.data() + 1, pos); // skip '*'
     auto expectedArgsCount = stringToNumber<uint32_t>(expectedArgsStr);
     if (!expectedArgsCount) {
         m_logger->error("Failed to ReadingHeaderState::doRead(): invalid multibulk length");
@@ -82,8 +81,7 @@ void ReadingArgumentLengthState::doRead(std::shared_ptr<boost::asio::streambuf> 
 
     buffer->commit(bytesTransferred);
 
-    std::string data(boost::asio::buffers_begin(buffer->data()),
-                     boost::asio::buffers_begin(buffer->data()) + bytesTransferred);
+    std::string_view data(static_cast<const char*>(buffer->data().data()), bytesTransferred);
 
     size_t pos = data.find("\r\n");
     if (pos == std::string::npos) {
@@ -100,7 +98,7 @@ void ReadingArgumentLengthState::doRead(std::shared_ptr<boost::asio::streambuf> 
         return;
     }
 
-    std::string bulkLengthStr = data.substr(1, pos); // skip '$'
+    std::string_view bulkLengthStr(data.data() + 1, pos); // skip '$'
     auto bulkLength = stringToNumber<uint32_t>(bulkLengthStr);
     if (!bulkLength) {
         m_logger->error("Failed to ReadingArgumentLengthState::doRead(): invalid bulk length");
@@ -133,8 +131,7 @@ void ReadingArgumentState::doRead(std::shared_ptr<boost::asio::streambuf> buffer
 
     buffer->commit(bytesTransferred);
 
-    std::string data(boost::asio::buffers_begin(buffer->data()),
-                     boost::asio::buffers_begin(buffer->data()) + bytesTransferred);
+    std::string_view data(static_cast<const char*>(buffer->data().data()), bytesTransferred);
 
     size_t pos = data.find("\r\n");
     if (pos == std::string::npos) {
@@ -144,7 +141,7 @@ void ReadingArgumentState::doRead(std::shared_ptr<boost::asio::streambuf> buffer
 
     size_t bytesConsumed = pos + 2;
 
-    std::string bulk = data.substr(0, pos);
+    std::string bulk(data.data(), pos);
     m_logger->debug("ReadingArgumentState::doRead() bulk: {}", bulk);
 
     if (bulk.length() != connection->m_context.expectedNextBulkLength) {

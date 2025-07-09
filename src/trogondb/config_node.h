@@ -3,8 +3,10 @@
 #include <memory>
 #include <list>
 #include <vector>
+#include <string>
 #include <sstream>
 #include <optional>
+#include <string_view>
 #include <fmt/format.h>
 #include <yaml-cpp/yaml.h>
 
@@ -65,7 +67,7 @@ private:
 
     static void traverseNode(const Node &root, std::list<Node> *outputNodes);
 
-    static std::string getLastElementInNodePath(const std::string &path);
+    static std::string_view getLastElementInNodePath(std::string_view path);
 
     int getRealColumnInFile() const;
 
