@@ -216,7 +216,7 @@ void ErrorState::doWrite(std::shared_ptr<boost::asio::streambuf> buffer, size_t 
 
     auto outputBuffer = buffer->prepare(m_output.size());
 
-    std::copy(m_output.begin(), m_output.end(), boost::asio::buffer_cast<unsigned char*>(outputBuffer));
+    std::copy(m_output.begin(), m_output.end(), static_cast<char*>(outputBuffer.data()));
 
     buffer->commit(m_output.size());
 
@@ -249,7 +249,7 @@ void WritingResponseState::doWrite(std::shared_ptr<boost::asio::streambuf> buffe
 
     auto outputBuffer = buffer->prepare(m_output.size());
 
-    std::copy(m_output.begin(), m_output.end(), boost::asio::buffer_cast<unsigned char*>(outputBuffer));
+    std::copy(m_output.begin(), m_output.end(), static_cast<char*>(outputBuffer.data()));
 
     buffer->commit(m_output.size());
 
