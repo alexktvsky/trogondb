@@ -16,7 +16,7 @@ class TrogondbConanFile(ConanFile):
         self.requires('spdlog/1.15.1')
         self.requires('yaml-cpp/0.8.0')
         self.requires('asio/1.34.2')
-        # self.requires('boost/1.88.0')
+        self.requires('boost/1.88.0')
 
     def build_requirements(self):
         self.tool_requires('cmake/3.31.6')

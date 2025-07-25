@@ -8,6 +8,7 @@
 namespace trogondb {
 
 constexpr size_t READ_BUFFER_SIZE = 1024;
+constexpr int TIMEOUT_SECONDS = 10;
 
 Connection::Connection(boost::asio::ip::tcp::socket socket, std::weak_ptr<ConnectionManager> owner)
     : m_logger(log::LogManager::instance().getDefaultLogger())
@@ -15,6 +16,7 @@ Connection::Connection(boost::asio::ip::tcp::socket socket, std::weak_ptr<Connec
     , m_connectionManager(owner)
     , m_readBuffer(std::make_shared<boost::asio::streambuf>())
     , m_writeBuffer(std::make_shared<boost::asio::streambuf>())
+    , m_timer(m_socket.get_executor())
     , m_closed(false)
     , m_state(nullptr)
 {}
@@ -63,7 +65,7 @@ void Connection::doRead()
 
     m_socket.async_read_some(buffer, std::bind(&Connection::onReadDone, shared_from_this(), std::placeholders::_1, std::placeholders::_2));
 
-    // startTimeout();
+    startTimeout();
 }
 
 void Connection::onReadDone(const boost::system::error_code &err, size_t bytesTransferred)
@@ -71,6 +73,9 @@ void Connection::onReadDone(const boost::system::error_code &err, size_t bytesTr
     if (err) {
         if (err == boost::asio::error::eof) {
             m_logger->debug("Client closed connection");
+        }
+        if (err == boost::asio::error::operation_aborted) {
+            // ignore
         }
         else {
             m_logger->error("Failed to onReadDone(): {}", err.message());
@@ -85,6 +90,8 @@ void Connection::onReadDone(const boost::system::error_code &err, size_t bytesTr
     }
 
     m_state->doRead(m_readBuffer, bytesTransferred);
+
+    startTimeout();
 }
 
 void Connection::doWrite()
@@ -95,6 +102,24 @@ void Connection::doWrite()
 void Connection::onWriteDone(const boost::system::error_code &err, size_t bytesTransferred)
 {
     m_state->doWrite(m_writeBuffer, bytesTransferred);
+}
+
+void Connection::startTimeout()
+{
+    m_timer.expires_after(std::chrono::seconds(TIMEOUT_SECONDS));
+    m_timer.async_wait(std::bind(&Connection::onTimeout, shared_from_this(), std::placeholders::_1));
+}
+
+void Connection::onTimeout(const boost::system::error_code &err)
+{
+    if (err) {
+        m_logger->error("Failed to Connection::onTimeout(): {}", err.message());
+        return;
+    }
+
+    m_logger->info("Timeout connection {}", m_socket.remote_endpoint().address().to_string());
+
+    m_state->doTimeout();
 }
 
 } // namespace trogondb

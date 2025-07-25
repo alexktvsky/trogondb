@@ -48,12 +48,16 @@ private:
 
     void onWriteDone(const boost::system::error_code &err, size_t bytesTransferred);
 
+    void startTimeout();
+
+    void onTimeout(const boost::system::error_code &err);
+
     std::shared_ptr<log::Logger> m_logger;
     boost::asio::ip::tcp::socket m_socket;
     std::weak_ptr<ConnectionManager> m_connectionManager;
     std::shared_ptr<boost::asio::streambuf> m_readBuffer;
     std::shared_ptr<boost::asio::streambuf> m_writeBuffer;
-    // boost::asio::steady_timer m_timer; // TODO
+    boost::asio::steady_timer m_timer;
     std::atomic<bool> m_closed;
 
     std::shared_ptr<IConnectionState> m_state;

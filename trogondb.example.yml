@@ -8,10 +8,10 @@ group: nobody
 
 log:
   - target: stdout
-    level: debug
+    level: info
 
   # - target: /tmp/trogondb.log
-  #   level: debug
+  #   level: info
 
   # - target: /tmp/rtserver_debug.log
   #   level: debug

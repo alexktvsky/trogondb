@@ -20,7 +20,11 @@ void IConnectionState::doWrite(std::shared_ptr<boost::asio::streambuf> buffer, s
 {}
 
 void IConnectionState::doTimeout()
-{}
+{
+    auto connection = m_connection.lock();
+    connection->changeState(std::make_shared<ClosedState>(connection));
+    connection->close();
+}
 
 void ReadingHeaderState::doRead(std::shared_ptr<boost::asio::streambuf> buffer, size_t bytesTransferred)
 {
