@@ -4,13 +4,20 @@
 
 #include "trogondb/command_line_parser.h"
 #include "trogondb/config_parser.h"
+#include "trogondb/os/process.h"
+#include "trogondb/log/log_manager.h"
+#include "trogondb/log/file_handler.h"
+#include "trogondb/log/stream_handler.h"
+#include "trogondb/log/rotating_file_handler.h"
 #include "trogondb/proactor.h"
 #include "trogondb/server.h"
-#include "trogondb/log/log_manager.h"
+#include "trogondb/signal_dispatcher.h"
 #include "trogondb/platform_defines.h"
 #include "trogondb/release.h"
 
 const std::string DEFAULT_CONFIG_FILENAME = "/etc/trogondb/trogondb.yml";
+
+namespace trogondb {
 
 void printVersionInfo()
 {
@@ -36,9 +43,9 @@ void printHelpInfo()
         PROJECT_BUILD_DATE);
 }
 
-trogondb::CommandLineParser parseArgs(const std::vector<std::string> &args)
+CommandLineParser parseArgs(const std::vector<std::string> &args)
 {
-    trogondb::CommandLineParser commandLineParser;
+    CommandLineParser commandLineParser;
     commandLineParser.addOption("h", "help", false);
     commandLineParser.addOption("v", "version", false);
     commandLineParser.addOption("c", "config", true);
@@ -48,19 +55,81 @@ trogondb::CommandLineParser parseArgs(const std::vector<std::string> &args)
     return commandLineParser;
 }
 
+void initializeProcess(const std::shared_ptr<Config> &config)
+{
+    if (config->daemon) {
+        os::Process::becomeDaemon();
+    }
+
+    if (!config->workdir.empty()) {
+        os::Process::setWorkingDirectory(config->workdir);
+    }
+
+    if (config->priority != 0) {
+        os::Process::setPriority(config->priority);
+    }
+
+    if (!config->user.empty()) {
+        os::Process::setUser(config->user);
+    }
+
+    if (!config->group.empty()) {
+        os::Process::setGroup(config->group);
+    }
+}
+
+std::shared_ptr<log::Logger> createLogger(const std::shared_ptr<Config> &config)
+{
+    std::vector<std::shared_ptr<log::Handler>> handlers;
+    log::Level minLevel = log::Level::OFF;
+
+    for (const auto &log : config->logs) {
+        std::shared_ptr<log::Handler> handler;
+
+        if (log.target == "stdout") {
+            handler = std::make_shared<log::StreamHandler>(stdout);
+        }
+        else if (log.target == "stderr") {
+            handler = std::make_shared<log::StreamHandler>(stderr);
+        }
+        else if (log.limit != 0) {
+            handler = std::make_shared<log::RotatingFileHandler>(log.target, log.limit, log.rotate);
+        }
+        else {
+            handler = std::make_shared<log::FileHandler>(log.target);
+        }
+
+        log::Level handlerLevel = log::getLevelByName(log.level);
+        handler->setLevel(handlerLevel);
+
+        if (minLevel > handlerLevel) {
+            minLevel = handlerLevel;
+        }
+
+        handlers.push_back(handler);
+    }
+
+    auto logger = std::make_shared<log::Logger>("", handlers);
+    logger->setLevel(minLevel);
+
+    return logger;
+}
+
+} // namespace trogondb
+
 int main(int argc, char **argv)
 {
     const std::vector<std::string> args(argv + 1, argv + argc);
 
     try {
-        auto commandLineParser = parseArgs(args);
+        auto commandLineParser = trogondb::parseArgs(args);
 
         if (commandLineParser.hasOption("help")) {
-            printHelpInfo();
+            trogondb::printHelpInfo();
             return 0;
         }
         if (commandLineParser.hasOption("version")) {
-            printVersionInfo();
+            trogondb::printVersionInfo();
             return 0;
         }
 
@@ -70,17 +139,30 @@ int main(int argc, char **argv)
         }
 
         auto config = trogondb::ConfigParser::parseFile(configFilename);
-        auto proactor = std::make_shared<trogondb::Proactor>();
-        auto server = std::make_shared<trogondb::Server>(proactor, std::move(config));
 
-        trogondb::log::LogManager::instance().setDefaultLogger(server->getLogger());
+        trogondb::initializeProcess(config);
+
+        auto logger = trogondb::createLogger(config);
+        trogondb::log::LogManager::instance().setDefaultLogger(logger);
+
+        auto proactor = std::make_shared<trogondb::Proactor>();
+        auto server = std::make_shared<trogondb::Server>(proactor, config);
+
+        auto signalDispatcher = std::make_shared<trogondb::SignalDispatcher>(proactor);
+        // TODO: add handlers
+        // signalDispatcher->addHandler(SIGTERM, std::make_shared<trogondb::SignalHandlerForShutdownRequest>(server));
+        // signalDispatcher->addHandler(SIGINT, std::make_shared<trogondb::SignalHandlerForShutdownRequest>(server));
+        // signalDispatcher->addHandler(SIGHUP, std::make_shared<trogondb::SignalHandlerForConfigReload>(server));
+        // signalDispatcher->addHandler(SIGQUIT, std::make_shared<trogondb::SignalHandlerForCrashExit>(server));
 
         server->start();
+        signalDispatcher->start();
+
         proactor->run();
     }
     catch (const trogondb::CommandLineException &e) {
         fmt::print(stderr, "{}\n\n", e.what());
-        printHelpInfo();
+        trogondb::printHelpInfo();
         return 1;
     }
     catch (const trogondb::ConfigFileException &e) {

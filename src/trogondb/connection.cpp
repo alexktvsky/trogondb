@@ -113,7 +113,6 @@ void Connection::startTimeout()
 void Connection::onTimeout(const boost::system::error_code &err)
 {
     if (err) {
-        m_logger->error("Failed to Connection::onTimeout(): {}", err.message());
         return;
     }
 

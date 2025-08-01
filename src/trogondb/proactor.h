@@ -8,7 +8,6 @@ namespace trogondb {
 class Acceptor;
 
 class Proactor {
-    friend class Acceptor;
 
 public:
     Proactor();
@@ -19,9 +18,9 @@ public:
 
     bool isRunning() const;
 
-private:
     std::shared_ptr<boost::asio::io_context> getImpl();
 
+private:
     std::shared_ptr<boost::asio::io_context> m_context;
 };
 

@@ -32,10 +32,6 @@ public:
     std::weak_ptr<CommandExecutor> getCommandExecutor() const;
 
 private:
-    static std::shared_ptr<log::Logger> createLogger(const std::shared_ptr<Config> &config);
-
-    void initializeProcess(const std::shared_ptr<Config> &config);
-
     void initialize();
 
     std::shared_ptr<Config> m_config;

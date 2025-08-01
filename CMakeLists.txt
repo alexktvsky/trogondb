@@ -46,6 +46,8 @@ PRIVATE
     src/trogondb/os/process.cpp
     src/trogondb/command_result.cpp
     src/trogondb/command.cpp
+    src/trogondb/signal_handler.cpp
+    src/trogondb/signal_dispatcher.cpp
     src/trogondb/log/logger.cpp
     src/trogondb/log/log_manager.cpp
     src/trogondb/log/level.cpp

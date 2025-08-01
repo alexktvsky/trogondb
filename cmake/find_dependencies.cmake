@@ -15,10 +15,6 @@ target_compile_options(${PROJECT_NAME} PRIVATE
     -DSPDLOG_FMT_EXTERNAL
 )
 
-# boost.asio
-find_package(asio REQUIRED)
-list(APPEND CMAKE_REQUIRED_LIBRARIES ${asio_LIBRARIES})
-
 # boost
 find_package(Boost REQUIRED)
 list(APPEND CMAKE_REQUIRED_LIBRARIES ${Boost_LIBRARIES})

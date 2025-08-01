@@ -5,9 +5,7 @@
 #include <vector>
 
 #include "trogondb/os/process.h"
-#include "trogondb/log/file_handler.h"
-#include "trogondb/log/stream_handler.h"
-#include "trogondb/log/rotating_file_handler.h"
+#include "trogondb/log/log_manager.h"
 
 namespace trogondb {
 
@@ -17,7 +15,7 @@ Server::Server(std::shared_ptr<Proactor> proactor, const std::shared_ptr<Config>
 
 Server::Server(std::shared_ptr<Proactor> proactor, std::shared_ptr<Config> &&config)
     : m_config(std::move(config))
-    , m_logger(createLogger(m_config))
+    , m_logger(log::LogManager::instance().getDefaultLogger())
     , m_proactor(proactor)
     , m_connectionManager()
     , m_acceptor()
@@ -26,66 +24,6 @@ Server::Server(std::shared_ptr<Proactor> proactor, std::shared_ptr<Config> &&con
     , m_initialized(false)
     , m_running(false)
 {}
-
-std::shared_ptr<log::Logger> Server::createLogger(const std::shared_ptr<Config> &config)
-{
-    std::vector<std::shared_ptr<log::Handler>> handlers;
-    log::Level minLevel = log::Level::OFF;
-
-    for (const auto &log : config->logs) {
-        std::shared_ptr<log::Handler> handler;
-
-        if (log.target == "stdout") {
-            handler = std::make_shared<log::StreamHandler>(stdout);
-        }
-        else if (log.target == "stderr") {
-            handler = std::make_shared<log::StreamHandler>(stderr);
-        }
-        else if (log.limit != 0) {
-            handler = std::make_shared<log::RotatingFileHandler>(log.target, log.limit, log.rotate);
-        }
-        else {
-            handler = std::make_shared<log::FileHandler>(log.target);
-        }
-
-        log::Level handlerLevel = log::getLevelByName(log.level);
-        handler->setLevel(handlerLevel);
-
-        if (minLevel > handlerLevel) {
-            minLevel = handlerLevel;
-        }
-
-        handlers.push_back(handler);
-    }
-
-    auto logger = std::make_shared<log::Logger>("", handlers);
-    logger->setLevel(minLevel);
-
-    return logger;
-}
-
-void Server::initializeProcess(const std::shared_ptr<Config> &config)
-{
-    if (config->daemon) {
-        os::Process::becomeDaemon();
-    }
-
-    if (!config->workdir.empty()) {
-        os::Process::setWorkingDirectory(config->workdir);
-    }
-
-    if (config->priority != 0) {
-        os::Process::setPriority(config->priority);
-    }
-
-    if (!config->user.empty()) {
-        os::Process::setUser(config->user);
-    }
-
-    if (!config->group.empty()) {
-        os::Process::setGroup(config->group);
-    }
-}
 
 void Server::initialize()
 {
@@ -99,8 +37,6 @@ void Server::initialize()
 
     m_acceptor->addListener(m_config->port);
     m_acceptor->setNonBlocking(true);
-
-    initializeProcess(m_config);
 }
 
 std::shared_ptr<log::Logger> Server::getLogger() const
