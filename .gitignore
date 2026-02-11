@@ -54,7 +54,7 @@ docs/html
 .idea/
 
 # VS Code project files
-# .vscode/
+.vscode/
 
 # Config file
 trogondb.yml
